@@ -1,6 +1,16 @@
-# Your private session data lives in the browser now — nothing to ignore there.
-__pycache__/
-*.pyc
+# dependencies
 node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# vercel
 .vercel/
-*.tmp
+
+# misc
+*.tsbuildinfo
+.DS_Store
+*.pem
+.env*.local
