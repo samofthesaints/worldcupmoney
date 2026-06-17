@@ -14,8 +14,10 @@ bankroll. You place every real bet yourself on Polymarket.
 import json
 import os
 import re
+import threading
 import urllib.parse
 import urllib.request
+import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -382,9 +384,19 @@ def simulate_compound(start, prices, fraction):
 
 def main():
     os.makedirs(DATA_DIR, exist_ok=True)
-    server = ThreadingHTTPServer((HOST, PORT), Handler)
-    print("World Cup Money running at  http://%s:%d" % (HOST, PORT))
-    print("Press Ctrl+C to stop.")
+    url = "http://%s:%d" % (HOST, PORT)
+    try:
+        server = ThreadingHTTPServer((HOST, PORT), Handler)
+    except OSError:
+        print("Port %d is already in use." % PORT)
+        print("World Cup Money is probably already running — just open %s" % url)
+        print("in your browser. (Or close the other window and try again.)")
+        return
+    print("\n  ⚽  World Cup Money is running.")
+    print("  Open this in your browser:  %s" % url)
+    print("  Keep this window open while you use it. Press Ctrl+C to stop.\n")
+    # Pop the dashboard open automatically once the server is up.
+    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
