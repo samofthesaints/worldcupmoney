@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { getFotmobInsight } from "@/lib/fotmob";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -23,17 +24,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "bad request" });
   }
   const match: string = (body?.match || "").toString().slice(0, 120);
+  const kickoff: string | undefined = body?.kickoff;
   const odds: Array<{ name: string; price: number }> = Array.isArray(body?.odds) ? body.odds : [];
   if (!match) return NextResponse.json({ ok: false, error: "missing match" });
 
   const oddsLine =
-    odds.map((o) => `${o.name}: ${Math.round(o.price * 100)}¢ (${(o.price * 100).toFixed(0)}%)`).join(", ") ||
-    "no odds provided";
+    odds.map((o) => `${o.name}: ${(o.price * 100).toFixed(0)}%`).join(", ") || "no odds provided";
+
+  // best-effort real-time FotMob data (score, momentum)
+  let fotmobLine = "";
+  try {
+    const fm = await getFotmobInsight(match, kickoff);
+    if (fm) fotmobLine = `\nReal-time FotMob data: ${fm.summary} (${fm.url})`;
+  } catch {
+    /* ignore */
+  }
 
   const prompt = `You are a sharp, honest football betting analyst helping someone make small, educated World Cup bets.
 
 Match: ${match}
-Current Polymarket odds: ${oddsLine}
+Current Polymarket odds (as % win chance): ${oddsLine}${fotmobLine}
 
 Use web search to research THIS specific match and gather:
 - FIFA world rankings of both teams

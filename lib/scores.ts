@@ -11,6 +11,7 @@ export type ScoreInfo = {
   state: "pre" | "in" | "post" | string;
   clock: string;
   detail: string;
+  date?: string;
 };
 
 function norm(s: string): string {
@@ -56,6 +57,7 @@ async function fetchScoreboard(): Promise<ScoreInfo[]> {
       state: st.type?.state || "pre",
       clock: st.displayClock || "",
       detail: st.type?.shortDetail || st.type?.detail || "",
+      date: ev.date || comp.date || undefined,
     });
   }
   return out;
@@ -73,6 +75,8 @@ export async function attachScores(events: MatchEvent[]): Promise<void> {
     const s = board.find((b) => teamInTitle(b.home, ev.title) && teamInTitle(b.away, ev.title));
     if (!s) continue;
     ev.score = s;
+    // ESPN's kickoff time is authoritative for ordering "next match" correctly.
+    if (s.date) ev.kickoff = s.date;
     if (s.state === "in") ev.live = true;
     else if (s.state === "post") ev.live = false;
   }

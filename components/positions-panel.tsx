@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/lib/session-context";
 import type { Position } from "@/lib/types";
-import { money } from "@/lib/utils";
+import { money, positionSignal } from "@/lib/utils";
 
 export function PositionsPanel() {
   const { address, setAddress, importSettled, state } = useSession();
@@ -140,8 +140,8 @@ export function PositionsPanel() {
                         </div>
                       </div>
                     </div>
-                    {resolved &&
-                      (imported ? (
+                    {resolved ? (
+                      imported ? (
                         <div className="mt-2 flex items-center gap-1 text-[11px] text-yes">
                           <Check className="h-3 w-3" /> Logged to bankroll
                         </div>
@@ -149,7 +149,28 @@ export function PositionsPanel() {
                         <Button size="sm" variant="secondary" className="mt-2 h-7 px-2.5 text-[12px]" onClick={() => logPosition(p)}>
                           Log {result} to bankroll
                         </Button>
-                      ))}
+                      )
+                    ) : (
+                      (() => {
+                        const sig = positionSignal(p.curPrice, p.avgPrice, p.redeemable);
+                        const toneClass =
+                          sig.tone === "yes"
+                            ? "bg-yes-muted text-yes"
+                            : sig.tone === "no"
+                              ? "bg-no-muted text-no"
+                              : sig.tone === "warning"
+                                ? "bg-warning/15 text-warning"
+                                : "bg-secondary text-muted-foreground";
+                        return (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${toneClass}`}>
+                              {sig.action}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">{sig.reason}</span>
+                          </div>
+                        );
+                      })()
+                    )}
                   </div>
                 );
               })}

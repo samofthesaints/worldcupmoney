@@ -78,7 +78,11 @@ function SuggestionItem({ s, rank }: { s: Suggestion; rank: number }) {
       const r = await fetch("/api/ai-take", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ match: s.match, odds: s.odds?.length ? s.odds : [{ name: s.pick, price: s.price }] }),
+        body: JSON.stringify({
+          match: s.match,
+          kickoff: s.kickoff,
+          odds: s.odds?.length ? s.odds : [{ name: s.pick, price: s.price }],
+        }),
       });
       const d = await r.json();
       d.ok ? setTake(d.take) : setErr(d.error || "AI take unavailable");
@@ -125,7 +129,7 @@ function SuggestionItem({ s, rank }: { s: Suggestion; rank: number }) {
 
       <div className="mt-2.5 flex gap-1.5">
         <Button size="sm" className="h-7 px-2.5 text-[12px]" onClick={() => openSlip({ match: s.match, pick: s.pick, price: s.price })}>
-          <Plus className="h-3.5 w-3.5" /> Add
+          <Plus className="h-3.5 w-3.5" /> {rank === 1 ? "Bet on this" : "Add"}
         </Button>
         <Button size="sm" variant="secondary" className="h-7 px-2.5 text-[12px]" onClick={getTake} disabled={loading}>
           {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}

@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Radio, Clock } from "lucide-react";
+import { Radio, Clock, Zap } from "lucide-react";
 import { ProbBar } from "@/components/prob-bar";
 import { PriceChart } from "@/components/price-chart";
+import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/session-context";
 import type { MatchEvent } from "@/lib/types";
 import { kickoffLabel, outcomeColor } from "@/lib/utils";
@@ -90,6 +91,19 @@ export function LiveHero({ ev, isNext }: { ev: MatchEvent | null; isNext?: boole
         <div className="mt-4">
           <ProbBar outcomes={ml.outcomes} />
         </div>
+
+        {(() => {
+          const fav = ml.outcomes.slice().sort((a, b) => b.price - a.price)[0];
+          if (!fav) return null;
+          return (
+            <Button
+              className="mt-4 w-full gap-2"
+              onClick={() => openSlip({ match: ev.title, pick: `${fav.name} — ${ml.group}`, price: fav.price })}
+            >
+              <Zap className="h-4 w-4" /> Bet on this — {fav.name} ({fav.impliedPct}%)
+            </Button>
+          );
+        })()}
 
         {chartToken && (
           <div className="mt-4 rounded-md border border-border bg-background/40 p-3">
