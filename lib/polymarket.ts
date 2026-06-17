@@ -43,8 +43,14 @@ const GROUP_ORDER: Record<MarketGroup, number> = {
   Other: 3,
 };
 
-// Is this event part of the World Cup? Match titles are just "Croatia vs. England",
-// so we rely on the event's tags / slug / series, with a title fallback.
+// World Cup match events use the slug "fifwc-<home>-<away>-<date>", e.g.
+// "fifwc-eng-hrv-2026-06-17". That prefix is the most reliable way to pick out
+// actual matches (and exclude futures like "World Cup goals" / "World Cup winner").
+function isWorldCupMatch(ev: any): boolean {
+  return (ev.slug || "").toLowerCase().startsWith("fifwc");
+}
+
+// Heuristic fallback when slugs aren't available: tags / slug / series + title.
 function isWorldCup(ev: any): boolean {
   const direct = `${ev.title || ""} ${ev.slug || ""} ${ev.seriesSlug || ""}`;
   if (WORLDCUP_RE.test(direct)) return true;
@@ -89,15 +95,15 @@ const WORLDCUP_TAG_SLUGS = ["world-cup", "fifa-world-cup", "fifa-world-cup-2026"
 export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
   const q = query.trim().toLowerCase();
 
-  // Strategy 1: ask Polymarket for the World Cup tag directly. Whatever it
-  // returns is already World-Cup-scoped, so we DON'T re-apply the isWorldCup
-  // heuristic (Gamma's list response may omit tag data, which would wrongly
-  // drop plainly-titled matches like "England vs. Croatia").
+  // Strategy 1: fetch the World Cup tag and keep events whose slug marks them as
+  // matches ("fifwc-…"). Try a few possible tag slugs.
   let out: MatchEvent[] = [];
+  let lastRaw: any[] = [];
   for (const slug of WORLDCUP_TAG_SLUGS) {
     const raw = await fetchEventsPage(slug);
     if (raw.length) {
-      const built = buildEvents(raw, q, false);
+      lastRaw = raw;
+      const built = buildEvents(raw, q, true);
       if (built.length) {
         out = built;
         break;
@@ -105,10 +111,16 @@ export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
     }
   }
 
-  // Strategy 2: no tag matched — broad fetch, scoped by the isWorldCup heuristic.
+  // Strategy 2: broad fetch, still keep only "fifwc-…" match slugs.
   if (!out.length) {
-    const raw = await fetchEventsPage(undefined);
-    out = buildEvents(raw, q, true);
+    lastRaw = await fetchEventsPage(undefined);
+    out = buildEvents(lastRaw, q, true);
+  }
+
+  // Strategy 3: last resort — no fifwc slugs found at all, fall back to the
+  // title/tag heuristic so we degrade rather than show nothing.
+  if (!out.length) {
+    out = buildEvents(lastRaw, q, false);
   }
 
   // attach live scores / authoritative in-play status (best-effort)
@@ -143,14 +155,20 @@ async function fetchEventsPage(tagSlug?: string): Promise<any[]> {
   return all;
 }
 
-function buildEvents(raw: any[], q: string, requireWorldCup: boolean): MatchEvent[] {
+function buildEvents(raw: any[], q: string, strict: boolean): MatchEvent[] {
   const out: MatchEvent[] = [];
   const seen = new Set<string>();
 
   for (const ev of raw) {
     const title: string = ev.title || "";
-    if (requireWorldCup && !isWorldCup(ev)) continue;
-    if (!MATCH_RE.test(title) || FUTURES_RE.test(title)) continue;
+    if (strict) {
+      // reliable: a real match has an "fifwc-…" slug
+      if (!isWorldCupMatch(ev)) continue;
+    } else {
+      // heuristic fallback
+      if (!isWorldCup(ev)) continue;
+      if (!MATCH_RE.test(title) || FUTURES_RE.test(title)) continue;
+    }
     if (q && !title.toLowerCase().includes(q)) continue;
 
     const eid = ev.id || ev.slug || title;
