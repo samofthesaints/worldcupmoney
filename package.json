@@ -1,0 +1,7 @@
+{
+  "name": "worldcupmoney",
+  "version": "1.0.0",
+  "description": "Live World Cup odds, a compounding planner, and an honest bankroll tracker.",
+  "private": true,
+  "type": "module"
+}

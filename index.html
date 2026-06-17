@@ -28,9 +28,7 @@
   .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
   .grn{color:var(--yes)} .red{color:var(--no)} .sec{color:var(--text-secondary)}
   .ter{color:var(--text-tertiary)} .warn{color:var(--warning)} .acc{color:var(--accent)}
-  .up{font-feature-settings:"tnum"}
 
-  /* top bar */
   header{height:64px;border-bottom:1px solid var(--border-subtle);display:flex;
     align-items:center;gap:24px;padding:0 24px;position:sticky;top:0;background:var(--bg-canvas);z-index:20}
   .logo{font-weight:600;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
@@ -51,10 +49,10 @@
   .grid{display:grid;gap:24px}
   .cols-3{grid-template-columns:repeat(3,1fr)}
   .cols-2{grid-template-columns:repeat(2,1fr)}
-  @media(max-width:900px){.cols-3,.cols-2{grid-template-columns:1fr}}
+  @media(max-width:900px){.cols-3,.cols-2{grid-template-columns:1fr}
+    header{gap:12px;padding:0 14px} .logo{font-size:14px} nav button{padding:8px 8px}}
   .hide{display:none}
 
-  /* cards */
   .card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px}
   .card.light{background:var(--bg-inverse);color:var(--text-inverse)}
   .card.light .sec{color:#3f3f46} .card.light .ter{color:#52525b}
@@ -69,7 +67,6 @@
     padding:2px 8px;display:inline-block}
   .delta.pos{background:var(--yes-muted);color:var(--yes)} .delta.neg{background:var(--no-muted);color:var(--no)}
 
-  /* buttons */
   button.btn{font-family:var(--font-sans);font-size:13px;font-weight:500;border-radius:var(--radius-md);
     height:40px;padding:0 16px;cursor:pointer;border:1px solid var(--border-subtle);
     background:var(--bg-surface-2);color:var(--text-primary)}
@@ -77,7 +74,6 @@
   button.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   button.btn.primary:hover{background:var(--accent-hover)}
   button.btn.sm{height:32px;padding:0 12px;font-size:12px}
-  button.btn:disabled{opacity:.4;cursor:not-allowed}
   .chip{font-family:var(--font-mono);font-size:12px;border-radius:9999px;border:1px solid var(--border-subtle);
     background:var(--bg-surface-2);color:var(--text-secondary);padding:5px 10px;cursor:pointer}
   .chip:hover{background:var(--bg-surface-3);color:var(--text-primary)}
@@ -91,10 +87,9 @@
   .stake-wrap .cur{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);font-family:var(--font-mono)}
   .stake-wrap input{padding-left:24px}
 
-  /* market cards */
   .mkt{border-top:1px solid var(--border-subtle);padding:16px 0}
   .mkt:first-child{border-top:0;padding-top:0}
-  .mkt-q{font-size:13px;color:var(--text-secondary);margin-bottom:10px;display:flex;gap:8px;align-items:center}
+  .mkt-q{font-size:13px;color:var(--text-secondary);margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .grp{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-tertiary);
     border:1px solid var(--border-subtle);border-radius:9999px;padding:2px 7px}
   .probbar{display:flex;height:8px;border-radius:9999px;overflow:hidden;margin-bottom:10px;background:var(--bg-surface-2)}
@@ -113,7 +108,6 @@
   .flash{animation:flash .9s ease}
   @keyframes flash{0%{background:var(--accent-muted)}100%{background:transparent}}
 
-  /* table */
   table{width:100%;border-collapse:collapse}
   th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-tertiary);
     text-align:left;font-weight:500;padding:8px 8px;border-bottom:1px solid var(--border-subtle)}
@@ -127,8 +121,7 @@
     border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:12px;margin-top:14px;line-height:1.5}
   .empty{text-align:center;color:var(--text-tertiary);padding:28px 12px;font-size:13px}
 
-  /* bet slip */
-  #slip{position:fixed;top:0;right:0;height:100vh;width:360px;background:var(--bg-surface);
+  #slip{position:fixed;top:0;right:0;height:100vh;width:360px;max-width:90vw;background:var(--bg-surface);
     border-left:1px solid var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,.5);
     transform:translateX(110%);transition:transform .25s ease;z-index:40;padding:24px;overflow:auto}
   #slip.open{transform:none}
@@ -136,11 +129,9 @@
   .slip-stat{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--border-subtle);font-size:13px}
   .slip-stat .mono{font-size:14px}
 
-  /* toast */
   #toast{position:fixed;bottom:24px;right:24px;z-index:50;display:flex;flex-direction:column;gap:10px}
   .toast{background:var(--bg-surface-2);border:1px solid var(--border-subtle);border-left:3px solid var(--accent);
-    border-radius:var(--radius-sm);padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;
-    animation:rise .25s ease}
+    border-radius:var(--radius-sm);padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;animation:rise .25s ease}
   .toast.yes{border-left-color:var(--yes)} .toast.no{border-left-color:var(--no)} .toast.info{border-left-color:var(--info)}
   @keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
   .skel{background:var(--bg-surface-2);border-radius:var(--radius-sm);height:14px;animation:sh 1.2s infinite}
@@ -161,8 +152,7 @@
 </header>
 
 <main>
-
-  <!-- ===================== MARKETS ===================== -->
+  <!-- MARKETS -->
   <section id="t-markets">
     <div class="card" style="margin-bottom:24px">
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
@@ -180,7 +170,7 @@
     <div id="markets"></div>
   </section>
 
-  <!-- ===================== PORTFOLIO ===================== -->
+  <!-- PORTFOLIO -->
   <section id="t-portfolio" class="hide">
     <div class="grid cols-3" style="margin-bottom:24px">
       <div class="card light">
@@ -199,7 +189,6 @@
         <div id="stopState" class="ter mono" style="margin-top:8px;font-size:12px">not set</div>
       </div>
     </div>
-
     <div class="grid cols-2">
       <div class="card">
         <div class="card-h"><h3>Start a session</h3></div>
@@ -211,9 +200,9 @@
         <div class="note">Compounding rolls winnings forward, so one loss ends the streak. The stop-loss is
           the hard line where you walk away. Only stake money you're fine losing.</div>
       </div>
-
       <div class="card">
-        <div class="card-h"><h3>Open positions &amp; activity</h3></div>
+        <div class="card-h"><h3>Open positions &amp; activity</h3>
+          <button class="btn sm" onclick="exportCSV()">Export CSV</button></div>
         <table><thead><tr>
           <th>Match</th><th>Pick</th><th class="num">Stake</th><th class="num">Odds</th>
           <th class="num">Return</th><th>Status</th><th></th>
@@ -223,7 +212,7 @@
     </div>
   </section>
 
-  <!-- ===================== PLANNER ===================== -->
+  <!-- PLANNER -->
   <section id="t-planner" class="hide">
     <div class="grid cols-2">
       <div class="card">
@@ -252,7 +241,6 @@
         all 6 matches at once — no compounding those days.</div>
     </div>
   </section>
-
 </main>
 
 <!-- BET SLIP -->
@@ -278,7 +266,7 @@
   </div>
   <button class="btn primary" style="width:100%;margin-top:20px" onclick="confirmBet()">Log this bet</button>
   <div class="note">Logging records it here and updates your portfolio when you settle it. Place the actual
-    order on Polymarket yourself.</div>
+    order on Polymarket yourself. Your bets are saved privately in this browser.</div>
 </div>
 
 <div id="toast"></div>
@@ -286,17 +274,21 @@
 <script>
 const $ = id => document.getElementById(id);
 const money = n => (n<0?'-$':'$') + Math.abs(+n||0).toFixed(2);
+const r2 = n => Math.round(n*100)/100;
 const esc = s => (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const outColor = i => i===0 ? 'var(--yes)' : (i===1 ? 'var(--no)' : ['#60A5FA','#EAB308','#A78BFA','#F472B6'][(i-2)%4]);
-let STATE = {bankroll:0,starting_bankroll:0,stop_loss:0,bets:[]};
-let SEL = null;            // selected outcome for slip
-let AUTO = false, timer = null;
-let lastPrices = {};       // for flash-on-change
 
-async function api(path, method='GET', body=null){
-  const opt={method,headers:{'Content-Type':'application/json'}};
-  if(body) opt.body=JSON.stringify(body);
-  return (await fetch(path,opt)).json();
+/* ---- state: saved privately in this browser ---- */
+const STORE='wcm_state_v1';
+const blank = () => ({starting_bankroll:0,bankroll:0,stop_loss:0,bets:[],next_id:1});
+function load(){ try{const s=JSON.parse(localStorage.getItem(STORE)); return (s&&typeof s==='object')?Object.assign(blank(),s):blank(); }catch(e){return blank();} }
+function save(){ localStorage.setItem(STORE, JSON.stringify(STATE)); }
+let STATE = load();
+let SEL=null, AUTO=false, timer=null, lastPrices={};
+
+function metrics(price){
+  const p=Number(price); if(!(p>0&&p<1)) return null;
+  return {price:Math.round(p*1e4)/1e4, implied_pct:Math.round(p*1000)/10, decimal_odds:Math.round((1/p)*1000)/1000, payout:1/p};
 }
 
 /* ---- tabs ---- */
@@ -307,27 +299,21 @@ function tab(name){
   });
 }
 
-/* ---- portfolio render ---- */
-function renderState(s){
-  STATE=s;
-  $('balPill').textContent = money(s.bankroll);
-  $('pv').textContent = money(s.bankroll);
-  const p = s.bankroll - s.starting_bankroll;
-  const d=$('pvDelta'); d.textContent=(p>=0?'+':'')+money(p);
-  d.className='delta '+(p>=0?'pos':'neg');
-  $('stopFig').textContent = s.stop_loss ? money(s.stop_loss) : '—';
+/* ---- portfolio ---- */
+function render(){
+  $('balPill').textContent=money(STATE.bankroll);
+  $('pv').textContent=money(STATE.bankroll);
+  const p=STATE.bankroll-STATE.starting_bankroll;
+  const d=$('pvDelta'); d.textContent=(p>=0?'+':'')+money(p); d.className='delta '+(p>=0?'pos':'neg');
+  $('stopFig').textContent=STATE.stop_loss?money(STATE.stop_loss):'—';
   const ss=$('stopState');
-  if(s.stop_loss && s.starting_bankroll>0 && s.bankroll<=s.stop_loss){
-    ss.innerHTML='<span class="red">Hit — walk away today.</span>';
-  } else ss.textContent = s.stop_loss ? 'active' : 'not set';
-
-  const settled=(s.bets||[]).filter(b=>b.status!=='open');
-  const wins=settled.filter(b=>b.status==='won').length;
-  $('winrate').textContent = settled.length ? Math.round(wins/settled.length*100)+'%' : '—';
-  $('winsub').textContent = settled.length ? `${wins} of ${settled.length} settled bets won` : 'no settled bets yet';
-
+  if(STATE.stop_loss&&STATE.starting_bankroll>0&&STATE.bankroll<=STATE.stop_loss) ss.innerHTML='<span class="red">Hit — walk away today.</span>';
+  else ss.textContent=STATE.stop_loss?'active':'not set';
+  const settled=STATE.bets.filter(b=>b.status!=='open'), wins=settled.filter(b=>b.status==='won').length;
+  $('winrate').textContent=settled.length?Math.round(wins/settled.length*100)+'%':'—';
+  $('winsub').textContent=settled.length?`${wins} of ${settled.length} settled bets won`:'no settled bets yet';
   const tb=$('bets'); tb.innerHTML='';
-  (s.bets||[]).slice().reverse().forEach(b=>{
+  STATE.bets.slice().reverse().forEach(b=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${esc(b.match)}</td><td class="sec">${esc(b.pick)}</td>
       <td class="num">${money(b.stake)}</td><td class="num">${b.decimal_odds}×</td>
@@ -340,32 +326,47 @@ function renderState(s){
         : `<button class="btn sm" onclick="del(${b.id})">✕</button>`}</td>`;
     tb.appendChild(tr);
   });
-  $('emptyBets').style.display=(s.bets||[]).length?'none':'block';
+  $('emptyBets').style.display=STATE.bets.length?'none':'block';
 }
-async function refresh(){ renderState(await api('/api/state')); }
-async function newSession(){
-  renderState(await api('/api/session','POST',{starting_bankroll:+$('startIn').value||0,stop_loss:+$('stopIn').value||0}));
-  toast('Session started','info');
+function newSession(){
+  const start=+$('startIn').value||0, stop=+$('stopIn').value||0;
+  STATE=blank(); STATE.starting_bankroll=start; STATE.bankroll=start; STATE.stop_loss=stop;
+  save(); render(); toast('Session started','info');
 }
-async function settle(id,result){ renderState(await api('/api/settle','POST',{id,result}));
-  toast(result==='won'?'Marked won 🎉':'Marked lost', result); }
-async function del(id){ renderState(await api('/api/delete','POST',{id})); }
+function settle(id,result){
+  const b=STATE.bets.find(x=>x.id===id); if(!b||b.status!=='open') return;
+  STATE.bankroll = r2(result==='won' ? STATE.bankroll+(b.to_return-b.stake) : STATE.bankroll-b.stake);
+  b.status=result; save(); render(); toast(result==='won'?'Marked won 🎉':'Marked lost', result);
+}
+function del(id){
+  const b=STATE.bets.find(x=>x.id===id); if(!b) return;
+  if(b.status==='won') STATE.bankroll=r2(STATE.bankroll-(b.to_return-b.stake));
+  else if(b.status==='lost') STATE.bankroll=r2(STATE.bankroll+b.stake);
+  STATE.bets=STATE.bets.filter(x=>x.id!==id); save(); render();
+}
+function exportCSV(){
+  if(!STATE.bets.length){ toast('No bets to export','no'); return; }
+  const rows=[['id','match','pick','stake','price','decimal_odds','to_return','status']];
+  STATE.bets.forEach(b=>rows.push([b.id,b.match,b.pick,b.stake,b.price,b.decimal_odds,b.to_return,b.status]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='worldcup-bets.csv'; a.click();
+}
 
 /* ---- markets ---- */
-function closingSoon(end){ if(!end) return false; const t=Date.parse(end); return t && (t-Date.now()) < 24*3600*1000 && t>Date.now(); }
-
+function closingSoon(end){ if(!end) return false; const t=Date.parse(end); return t&&(t-Date.now())<864e5&&t>Date.now(); }
 async function loadMarkets(silent){
   const box=$('markets');
   if(!silent) box.innerHTML='<div class="card"><div class="skel" style="width:40%;margin-bottom:12px"></div><div class="skel" style="width:80%"></div></div>';
-  const r=await api('/api/markets?q='+encodeURIComponent($('q').value.trim()));
+  let r; try{ r=await (await fetch('/api/markets?q='+encodeURIComponent($('q').value.trim()))).json(); }
+  catch(e){ box.innerHTML=`<div class="card"><div class="warn" style="font-weight:600">Couldn't load odds</div><div class="sec">${esc(String(e))}</div></div>`; return; }
   if(!r.ok && r.error){
     box.innerHTML=`<div class="card"><div class="warn" style="font-weight:600;margin-bottom:6px">Couldn't reach Polymarket</div>
-      <div class="sec">${esc(r.error)}</div><div class="note">You can still log bets manually from the Portfolio tab.</div></div>`;
-    return;
+      <div class="sec">${esc(r.error)}</div></div>`; return;
   }
-  if(!r.events || !r.events.length){
-    box.innerHTML='<div class="card"><div class="empty">No matching markets. Try a team name, or check back when more matches open.</div></div>';
-    return;
+  if(!r.events||!r.events.length){
+    box.innerHTML='<div class="card"><div class="empty">No matching markets. Try a team name, or check back when more matches open.</div></div>'; return;
   }
   box.innerHTML='';
   r.events.forEach(ev=>{
@@ -375,12 +376,10 @@ async function loadMarkets(silent){
     if(ev.volume24hr) h+=`<div class="ter mono" style="font-size:11px;margin-bottom:14px">24h vol ${money(ev.volume24hr)}</div>`;
     ev.markets.forEach(m=>{
       h+=`<div class="mkt"><div class="mkt-q"><span class="grp">${esc(m.group)}</span> ${esc(m.question)}</div>`;
-      // probability bar
       h+=`<div class="probbar">`+m.outcomes.map((o,i)=>`<i style="width:${o.implied_pct}%;background:${outColor(i)}"></i>`).join('')+`</div>`;
       h+=`<div class="outs">`+m.outcomes.map((o,i)=>{
         const key=ev.title+'|'+m.question+'|'+o.name;
-        const flash = lastPrices[key]!==undefined && lastPrices[key]!==o.price ? ' flash':'';
-        lastPrices[key]=o.price;
+        const flash=(lastPrices[key]!==undefined&&lastPrices[key]!==o.price)?' flash':''; lastPrices[key]=o.price;
         return `<button class="outbtn${flash}" onclick='openSlip(${JSON.stringify(ev.title)},${JSON.stringify(o.name+" — "+m.group)},${o.price})'>
           <div class="nm">${esc(o.name)}</div>
           <div class="pr" style="color:${outColor(i)}">${Math.round(o.price*100)}¢</div>
@@ -391,11 +390,9 @@ async function loadMarkets(silent){
   });
 }
 function toggleAuto(){
-  AUTO=!AUTO;
-  $('autoBtn').classList.toggle('on',AUTO);
-  $('autoLbl').textContent = AUTO?'Auto-refresh on':'Auto-refresh off';
-  if(AUTO){ loadMarkets(true); timer=setInterval(()=>loadMarkets(true),30000); }
-  else clearInterval(timer);
+  AUTO=!AUTO; $('autoBtn').classList.toggle('on',AUTO);
+  $('autoLbl').textContent=AUTO?'Auto-refresh on':'Auto-refresh off';
+  if(AUTO){ loadMarkets(true); timer=setInterval(()=>loadMarkets(true),30000); } else clearInterval(timer);
 }
 
 /* ---- bet slip ---- */
@@ -404,44 +401,45 @@ function openSlip(match,pick,price){
   $('slipMatch').textContent=match; $('slipPick').textContent=pick;
   $('slipPrice').textContent=Math.round(price*100)+'¢ ('+price+')';
   $('slipImp').textContent=(price*100).toFixed(1)+'%';
-  $('slipStake').value=''; slipCalc();
-  $('slip').classList.add('open');
+  $('slipStake').value=''; slipCalc(); $('slip').classList.add('open');
 }
 function closeSlip(){ $('slip').classList.remove('open'); }
 function slipCalc(){
   const stake=+$('slipStake').value||0, p=SEL?SEL.price:0;
-  if(stake>0 && p>0){
-    const shares=stake/p, pay=stake/p, profit=pay-stake;
-    $('slipShares').textContent=shares.toFixed(2);
-    $('slipPay').textContent=money(pay); $('slipProfit').textContent='+'+money(profit);
+  if(stake>0&&p>0){ const pay=stake/p;
+    $('slipShares').textContent=(stake/p).toFixed(2); $('slipPay').textContent=money(pay); $('slipProfit').textContent='+'+money(pay-stake);
   } else { $('slipShares').textContent='—'; $('slipPay').textContent='—'; $('slipProfit').textContent='—'; }
 }
 function addStake(n){ $('slipStake').value=(+$('slipStake').value||0)+n; slipCalc(); }
 function maxStake(){ $('slipStake').value=(STATE.bankroll||0).toFixed(2); slipCalc(); }
-async function confirmBet(){
-  const stake=+$('slipStake').value||0;
-  if(!SEL||stake<=0){ toast('Enter a stake','no'); return; }
-  const s=await api('/api/bets','POST',{match:SEL.match,pick:SEL.pick,stake,price:SEL.price});
-  if(s.error){ toast(s.error,'no'); return; }
-  renderState(s); closeSlip(); toast('Bet logged ✓','yes');
+function confirmBet(){
+  const stake=+$('slipStake').value||0, m=SEL?metrics(SEL.price):null;
+  if(!SEL||stake<=0||!m){ toast('Enter a stake','no'); return; }
+  STATE.bets.push({id:STATE.next_id++,match:SEL.match,pick:SEL.pick,stake:r2(stake),
+    price:m.price,decimal_odds:m.decimal_odds,to_return:r2(stake*m.payout),status:'open'});
+  save(); render(); closeSlip(); toast('Bet logged ✓','yes');
 }
 
 /* ---- planner ---- */
 function useBalance(){ $('planStart').value=(STATE.bankroll||0).toFixed(0); plan(); }
-async function plan(){
-  const prices=$('legs').value, start=+$('planStart').value||0, fraction=$('frac').value;
-  if(!prices.trim()||!start){ $('planOut').innerHTML='<div class="empty">Enter a start amount and leg prices.</div>'; return; }
-  const r=await api(`/api/compound?start=${start}&fraction=${fraction}&prices=${encodeURIComponent(prices)}`);
-  let rows=r.legs.map((l,i)=> l.error
-    ? `<div class="slip-stat"><span class="red">Leg ${i+1}: ${l.error}</span></div>`
-    : `<div class="slip-stat"><span class="sec">Leg ${i+1} · ${Math.round(l.price*100)}¢ (${l.implied_pct}%)</span>
-         <span class="mono">${money(l.stake)} → <span class="grn">${money(l.bankroll_if_win)}</span></span></div>`
-  ).join('');
+function plan(){
+  const prices=$('legs').value.split(',').map(s=>s.trim()).filter(Boolean).map(Number);
+  const start=+$('planStart').value||0, fraction=Math.min(Math.max(+$('frac').value,0),1);
+  if(!prices.length||!start){ $('planOut').innerHTML='<div class="empty">Enter a start amount and leg prices.</div>'; return; }
+  let bankroll=start, combined=1, rows='';
+  prices.forEach((p,i)=>{
+    const m=metrics(p);
+    if(!m){ rows+=`<div class="slip-stat"><span class="red">Leg ${i+1}: price must be 0–1</span></div>`; return; }
+    const stake=bankroll*fraction, afterWin=bankroll-stake+stake*m.payout; combined*=m.price;
+    rows+=`<div class="slip-stat"><span class="sec">Leg ${i+1} · ${Math.round(m.price*100)}¢ (${m.implied_pct}%)</span>
+      <span class="mono">${money(stake)} → <span class="grn">${money(afterWin)}</span></span></div>`;
+    bankroll=afterWin;
+  });
   $('planOut').innerHTML=rows+
     `<div class="slip-stat" style="border-bottom:0;margin-top:4px"><span><b>If all legs win</b></span>
-       <span class="mono grn"><b>${money(r.final_if_all_win)}</b> (+${money(r.profit_if_all_win)})</span></div>
-     <div class="note"><b class="warn">Chain success rate:</b> all ${r.legs.length} legs landing has about a
-       <b class="mono">${r.combined_hit_prob_pct}%</b> combined chance at these prices. More legs = lower odds of the full run.</div>`;
+      <span class="mono grn"><b>${money(bankroll)}</b> (+${money(bankroll-start)})</span></div>
+     <div class="note"><b class="warn">Chain success rate:</b> all ${prices.length} legs landing has about a
+       <b class="mono">${(combined*100).toFixed(2)}%</b> combined chance at these prices. More legs = lower odds of the full run.</div>`;
 }
 
 /* ---- toast ---- */
@@ -450,7 +448,7 @@ function toast(msg,type='info'){
   $('toast').appendChild(t); setTimeout(()=>t.remove(),3200);
 }
 
-refresh(); loadMarkets();
+render(); loadMarkets();
 </script>
 </body>
 </html>
