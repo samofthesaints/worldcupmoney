@@ -19,6 +19,7 @@ export type MatchEvent = {
   title: string;
   slug?: string;
   endDate?: string;
+  kickoff?: string;
   volume24hr?: number;
   live?: boolean;
   markets: Market[];

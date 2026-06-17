@@ -35,11 +35,14 @@ web-searches recent team news), sizes your compounding chain, and keeps an hones
 
 ## Features
 
-- **📊 Live match odds with charts.** One card per game — moneyline (win/draw/win), total goals, and exact
-  scores (`2-2`) — with probability bars and a 24h price-history chart. **Tournament futures** (who wins the
-  World Cup, group winners, top scorer) are filtered out; match markets only.
+- **🧭 Dashboard overview.** A composed home screen (per `design.md`'s Zajno layout): a light feature card with
+  your portfolio value + bankroll chart, a live/upcoming **match list**, today's P&L, and the **suggested bets**
+  panel — all on one screen.
+- **📊 Live match odds, compact.** A scannable list of rows (not page-wide cards); tap a row to expand totals,
+  exact scores (`2-2`), probability bars, and a 24h price chart. Numbers show the market's **% chance** (with the
+  Polymarket ¢ price as the small label). **World Cup matches only** — no tournament futures, no other sports.
 - **✨ Suggested bets.** A ranked feed built from live data: price **momentum**, **value** (low overhead),
-  **live** games, and favorites — each with a plain-English reasoning. Hit **Get AI take** on any pick for a
+  **live** games, and favorites — each with plain-English reasoning. Hit **AI take** on any pick for a
   news-aware analysis.
 - **🔁 Compounding planner.** Chain leg prices and see the projected bankroll per leg as a chart, plus the
   **combined probability the whole chain lands** — the honest reality check.

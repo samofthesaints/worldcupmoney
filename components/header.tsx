@@ -11,8 +11,8 @@ export function Header() {
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-border bg-background px-4 sm:gap-6 sm:px-6">
       <span className="whitespace-nowrap text-[15px] font-semibold tracking-tight sm:text-base">⚽ World Cup Money</span>
       <TabsList>
+        <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
         <TabsTrigger value="markets">Markets</TabsTrigger>
-        <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
         <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
         <TabsTrigger value="planner">Planner</TabsTrigger>
       </TabsList>

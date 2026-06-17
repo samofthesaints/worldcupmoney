@@ -22,6 +22,21 @@ export function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+export function kickoffLabel(kickoff?: string): string {
+  if (!kickoff) return "";
+  const k = Date.parse(kickoff);
+  if (Number.isNaN(k)) return "";
+  const d = new Date(k);
+  const diff = k - Date.now();
+  const hhmm = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (diff > 0 && diff < 6 * 3600e3) {
+    const mins = Math.round(diff / 60000);
+    return mins < 60 ? `in ${mins}m` : `in ${Math.floor(mins / 60)}h ${mins % 60}m`;
+  }
+  if (d.toDateString() === new Date().toDateString()) return `Today ${hhmm}`;
+  return `${d.toLocaleDateString([], { weekday: "short" })} ${hhmm}`;
+}
+
 const OUTCOME_COLORS = ["#22C55E", "#EF4444", "#60A5FA", "#EAB308", "#A78BFA", "#F472B6"];
 export function outcomeColor(i: number): string {
   return OUTCOME_COLORS[i] ?? OUTCOME_COLORS[(i - 2) % 4 + 2];

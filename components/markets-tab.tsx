@@ -6,14 +6,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MarketCard } from "@/components/market-card";
+import { MatchRow } from "@/components/match-row";
 import type { MatchEvent } from "@/lib/types";
 
 export function MarketsTab() {
   const [query, setQuery] = React.useState("");
   const [events, setEvents] = React.useState<MatchEvent[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const [auto, setAuto] = React.useState(false);
+  const [auto, setAuto] = React.useState(true);
   const queryRef = React.useRef(query);
   queryRef.current = query;
 
@@ -41,12 +41,14 @@ export function MarketsTab() {
     return () => clearInterval(id);
   }, [auto, load]);
 
+  const live = (events || []).filter((e) => e.live);
+
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
+    <div className="space-y-4">
+      <Card className="p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[220px] flex-1">
-            <div className="mb-1.5 text-[11px] uppercase tracking-wider text-tertiary">Search matches</div>
+          <div className="min-w-[200px] flex-1">
+            <div className="mb-1.5 text-[11px] uppercase tracking-wider text-tertiary">Search World Cup matches</div>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tertiary" />
               <Input
@@ -54,34 +56,23 @@ export function MarketsTab() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && load()}
-                placeholder="Team name (Brazil, Croatia…) — blank = all matches"
+                placeholder="Team name — blank = all World Cup matches"
               />
             </div>
           </div>
-          <Button onClick={() => load()}>Fetch odds</Button>
+          <Button onClick={() => load()}>Search</Button>
           <Button variant={auto ? "yes" : "secondary"} onClick={() => setAuto((a) => !a)}>
             <RefreshCw className={`h-4 w-4 ${auto ? "animate-spin" : ""}`} style={{ animationDuration: "3s" }} />
-            {auto ? "Live" : "Auto-refresh"}
+            {auto ? "Live · 30s" : "Auto-refresh"}
           </Button>
         </div>
-        <p className="mt-3 rounded-sm border border-border bg-secondary p-3 text-[12.5px] leading-relaxed text-muted-foreground">
-          Match markets only — no tournament futures. Each card shows every bet Polymarket lists for that game:
-          moneyline (win / draw / win), total goals, and exact scores (e.g. <b>2–2</b>). Price = implied probability.
-          Click any outcome to open a bet slip; you place the real bet on Polymarket.
+        <p className="mt-3 text-[12px] leading-relaxed text-tertiary">
+          World Cup matches only — no tournament futures. Numbers are the market&apos;s <b>% chance</b> (the small ¢ is the
+          Polymarket price you&apos;ll see when betting). Tap a row to see totals &amp; exact-score markets and a price chart.
         </p>
       </Card>
 
-      {events === null && (
-        <div className="space-y-6">
-          {[0, 1].map((i) => (
-            <Card key={i} className="space-y-3 p-6">
-              <Skeleton className="h-5 w-1/3" />
-              <Skeleton className="h-2 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </Card>
-          ))}
-        </div>
-      )}
+      {events === null && [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 w-full" />)}
 
       {events && error && (
         <Card className="p-6">
@@ -92,15 +83,27 @@ export function MarketsTab() {
 
       {events && !error && events.length === 0 && (
         <Card className="p-10 text-center text-sm text-tertiary">
-          No matching matches right now. Try a team name, or check back when more games open.
+          No World Cup matches open right now. Try a team name, or check back near kickoff.
         </Card>
       )}
 
-      {events && events.length > 0 && (
-        <div className="space-y-6">
-          {events.map((ev, i) => (
-            <MarketCard key={ev.slug || ev.title} ev={ev} index={i} />
+      {events && live.length > 0 && (
+        <div className="space-y-2">
+          <div className="px-1 text-[11px] uppercase tracking-wider text-no">Live now</div>
+          {live.map((ev, i) => (
+            <MatchRow key={ev.slug || ev.title} ev={ev} index={i} />
           ))}
+        </div>
+      )}
+
+      {events && events.filter((e) => !e.live).length > 0 && (
+        <div className="space-y-2">
+          {live.length > 0 && <div className="px-1 pt-2 text-[11px] uppercase tracking-wider text-tertiary">Upcoming</div>}
+          {events
+            .filter((e) => !e.live)
+            .map((ev, i) => (
+              <MatchRow key={ev.slug || ev.title} ev={ev} index={i} />
+            ))}
         </div>
       )}
     </div>

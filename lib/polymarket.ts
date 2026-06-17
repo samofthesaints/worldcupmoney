@@ -7,7 +7,9 @@ const CLOB = "https://clob.polymarket.com";
 // Only show actual matches ("Brazil vs. Haiti"), never tournament futures
 // ("Who will win the World Cup", group winners, top scorer, to-advance, etc.).
 const MATCH_RE = /\bvs\.?\b/i;
-const FUTURES_RE = /(to win the|winner|top scorer|golden (boot|ball)|to advance|to reach|group [a-l]\b|champion)/i;
+const FUTURES_RE = /(to win the|winner|top scorer|golden (boot|ball)|to advance|to reach|group [a-l]\b|champion|to qualify)/i;
+const WORLDCUP_RE = /world ?cup/i;
+const MATCH_WINDOW_MS = 2.75 * 60 * 60 * 1000; // a soccer match is "live" for ~2h45m after kickoff
 
 function parseField(val: unknown): string[] | null {
   if (Array.isArray(val)) return val as string[];
@@ -39,7 +41,37 @@ const GROUP_ORDER: Record<MarketGroup, number> = {
   Other: 3,
 };
 
-const DEFAULT_TERMS = ["world cup", " vs", " vs.", "v.s", "group "];
+// Is this event part of the World Cup? Match titles are just "Croatia vs. England",
+// so we rely on the event's tags / slug / series, with a title fallback.
+function isWorldCup(ev: any): boolean {
+  const direct = `${ev.title || ""} ${ev.slug || ""} ${ev.seriesSlug || ""}`;
+  if (WORLDCUP_RE.test(direct)) return true;
+  const groups = [...(ev.tags || []), ...(ev.series || [])];
+  for (const t of groups) {
+    if (typeof t === "string") {
+      if (WORLDCUP_RE.test(t)) return true;
+    } else if (t && typeof t === "object") {
+      if (WORLDCUP_RE.test(`${t.label || ""} ${t.slug || ""} ${t.title || ""}`)) return true;
+    }
+  }
+  return false;
+}
+
+function kickoffOf(ev: any): string | undefined {
+  if (ev.startDate) return ev.startDate;
+  for (const m of ev.markets || []) {
+    if (m.gameStartTime) return m.gameStartTime;
+  }
+  return undefined;
+}
+
+function isLiveNow(kickoff?: string, closed?: boolean): boolean {
+  if (closed || !kickoff) return false;
+  const k = Date.parse(kickoff);
+  if (Number.isNaN(k)) return false;
+  const now = Date.now();
+  return now >= k && now <= k + MATCH_WINDOW_MS;
+}
 
 async function gammaGet(path: string) {
   const r = await fetch(GAMMA + path, {
@@ -50,24 +82,18 @@ async function gammaGet(path: string) {
   return r.json();
 }
 
-function isLive(ev: any): boolean {
-  const now = Date.now();
-  const start = ev.startDate ? Date.parse(ev.startDate) : NaN;
-  const end = ev.endDate ? Date.parse(ev.endDate) : NaN;
-  if (!Number.isNaN(start) && now >= start && (Number.isNaN(end) || now < end)) return true;
-  return false;
-}
-
 export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
-  const terms = query ? [query.toLowerCase()] : DEFAULT_TERMS;
+  const q = query.trim().toLowerCase();
   const out: MatchEvent[] = [];
   const seen = new Set<string>();
 
   for (const offset of [0, 100, 200]) {
     let events: any[];
     try {
+      // tag_slug pre-filters to the World Cup when the API honors it; we filter
+      // again client-side (isWorldCup) so it's correct either way.
       events = await gammaGet(
-        `/events?closed=false&active=true&limit=100&offset=${offset}&order=volume24hr&ascending=false`,
+        `/events?closed=false&active=true&limit=100&offset=${offset}&order=volume24hr&ascending=false&tag_slug=world-cup`,
       );
     } catch (e) {
       if (out.length) break;
@@ -77,14 +103,11 @@ export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
 
     for (const ev of events) {
       const title: string = ev.title || "";
-      // hard gate: must look like a match, must not look like a futures market
+      // hard gates: World Cup, looks like a match, not a futures market
+      if (!isWorldCup(ev)) continue;
       if (!MATCH_RE.test(title) || FUTURES_RE.test(title)) continue;
-
-      const hay = title.toLowerCase();
-      const matched =
-        terms.some((t) => hay.includes(t)) ||
-        (ev.markets || []).some((m: any) => terms.some((t) => (m.question || "").toLowerCase().includes(t)));
-      if (!matched) continue;
+      // optional team-name search
+      if (q && !title.toLowerCase().includes(q)) continue;
 
       const eid = ev.id || ev.slug || title;
       if (seen.has(eid)) continue;
@@ -123,24 +146,32 @@ export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
       if (!markets.length) continue;
       markets.sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group]);
 
+      const kickoff = kickoffOf(ev);
       out.push({
         title,
         slug: ev.slug,
         endDate: ev.endDate,
+        kickoff,
         volume24hr: ev.volume24hr,
-        live: isLive(ev),
+        live: isLiveNow(kickoff, ev.closed),
         markets,
       });
     }
     if (events.length < 100) break;
   }
-  // live matches first, then by 24h volume
-  out.sort((a, b) => Number(b.live) - Number(a.live) || (b.volume24hr || 0) - (a.volume24hr || 0));
-  return out.slice(0, 40);
+
+  // live first, then soonest kickoff, then volume
+  out.sort((a, b) => {
+    if (a.live !== b.live) return Number(b.live) - Number(a.live);
+    const ka = a.kickoff ? Date.parse(a.kickoff) : Infinity;
+    const kb = b.kickoff ? Date.parse(b.kickoff) : Infinity;
+    if (ka !== kb) return ka - kb;
+    return (b.volume24hr || 0) - (a.volume24hr || 0);
+  });
+  return out.slice(0, 60);
 }
 
 export async function fetchPriceHistory(tokenId: string): Promise<PricePoint[]> {
-  // fidelity = minutes per point; interval = window. 1d window is plenty for a match.
   const url = `${CLOB}/prices-history?market=${encodeURIComponent(tokenId)}&interval=1d&fidelity=15`;
   const r = await fetch(url, { headers: { "User-Agent": "worldcupmoney/2.0" }, next: { revalidate: 30 } });
   if (!r.ok) throw new Error("history HTTP " + r.status);
