@@ -79,7 +79,9 @@ export type Suggestion = {
   score: number;
   signals: Signal[];
   reasoning: string;
+  odds: { name: string; price: number }[];
   endDate?: string;
+  kickoff?: string;
   live?: boolean;
 };
 

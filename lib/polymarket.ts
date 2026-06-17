@@ -84,13 +84,32 @@ async function gammaGet(path: string) {
   return r.json();
 }
 
+const WORLDCUP_TAG_SLUGS = ["world-cup", "fifa-world-cup", "fifa-world-cup-2026", "worldcup"];
+
 export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
   const q = query.trim().toLowerCase();
-  // Primary: ask Polymarket for the World Cup tag directly. If that yields
-  // nothing (tag slug unknown / not honored), fall back to a broad fetch and
-  // rely on the isWorldCup heuristic so we still scope correctly.
-  let out = await gather(q, true);
-  if (!out.length) out = await gather(q, false);
+
+  // Strategy 1: ask Polymarket for the World Cup tag directly. Whatever it
+  // returns is already World-Cup-scoped, so we DON'T re-apply the isWorldCup
+  // heuristic (Gamma's list response may omit tag data, which would wrongly
+  // drop plainly-titled matches like "England vs. Croatia").
+  let out: MatchEvent[] = [];
+  for (const slug of WORLDCUP_TAG_SLUGS) {
+    const raw = await fetchEventsPage(slug);
+    if (raw.length) {
+      const built = buildEvents(raw, q, false);
+      if (built.length) {
+        out = built;
+        break;
+      }
+    }
+  }
+
+  // Strategy 2: no tag matched — broad fetch, scoped by the isWorldCup heuristic.
+  if (!out.length) {
+    const raw = await fetchEventsPage(undefined);
+    out = buildEvents(raw, q, true);
+  }
 
   // attach live scores / authoritative in-play status (best-effort)
   await attachScores(out);
@@ -105,82 +124,83 @@ export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
   return out.slice(0, 60);
 }
 
-async function gather(q: string, useTag: boolean): Promise<MatchEvent[]> {
-  const out: MatchEvent[] = [];
-  const seen = new Set<string>();
-
+async function fetchEventsPage(tagSlug?: string): Promise<any[]> {
+  const all: any[] = [];
   for (const offset of [0, 100, 200]) {
     let events: any[];
     try {
-      const tag = useTag ? "&tag_slug=world-cup" : "";
+      const tag = tagSlug ? `&tag_slug=${tagSlug}` : "";
       events = await gammaGet(
         `/events?closed=false&active=true&limit=100&offset=${offset}&order=volume24hr&ascending=false${tag}`,
       );
-    } catch (e) {
-      if (out.length || useTag) break; // a broken tag query shouldn't throw the whole request
-      throw e;
+    } catch {
+      break;
     }
     if (!events || !events.length) break;
-
-    for (const ev of events) {
-      const title: string = ev.title || "";
-      // hard gates: World Cup, looks like a match, not a futures market
-      if (!isWorldCup(ev)) continue;
-      if (!MATCH_RE.test(title) || FUTURES_RE.test(title)) continue;
-      // optional team-name search
-      if (q && !title.toLowerCase().includes(q)) continue;
-
-      const eid = ev.id || ev.slug || title;
-      if (seen.has(eid)) continue;
-      seen.add(eid);
-
-      const markets: Market[] = [];
-      for (const m of ev.markets || []) {
-        if (m.closed || m.active === false) continue;
-        const names = parseField(m.outcomes);
-        const prices = parseField(m.outcomePrices);
-        const tokens = parseField(m.clobTokenIds);
-        if (!names || !prices || names.length !== prices.length) continue;
-
-        const outcomes: Outcome[] = [];
-        let sum = 0;
-        for (let i = 0; i < names.length; i++) {
-          const mm = priceMetrics(Number(prices[i]));
-          if (!mm) continue;
-          sum += mm.price;
-          outcomes.push({
-            name: names[i],
-            price: mm.price,
-            impliedPct: mm.impliedPct,
-            decimalOdds: mm.decimalOdds,
-            tokenId: tokens && tokens[i] ? tokens[i] : undefined,
-          });
-        }
-        if (!outcomes.length) continue;
-        markets.push({
-          question: m.question || title,
-          group: marketGroup(m.question || ""),
-          outcomes,
-          overhead: Math.round((sum - 1) * 1000) / 1000,
-        });
-      }
-      if (!markets.length) continue;
-      markets.sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group]);
-
-      const kickoff = kickoffOf(ev);
-      out.push({
-        title,
-        slug: ev.slug,
-        endDate: ev.endDate,
-        kickoff,
-        volume24hr: ev.volume24hr,
-        live: isLiveNow(kickoff, ev.closed),
-        markets,
-      });
-    }
+    all.push(...events);
     if (events.length < 100) break;
   }
+  return all;
+}
 
+function buildEvents(raw: any[], q: string, requireWorldCup: boolean): MatchEvent[] {
+  const out: MatchEvent[] = [];
+  const seen = new Set<string>();
+
+  for (const ev of raw) {
+    const title: string = ev.title || "";
+    if (requireWorldCup && !isWorldCup(ev)) continue;
+    if (!MATCH_RE.test(title) || FUTURES_RE.test(title)) continue;
+    if (q && !title.toLowerCase().includes(q)) continue;
+
+    const eid = ev.id || ev.slug || title;
+    if (seen.has(eid)) continue;
+    seen.add(eid);
+
+    const markets: Market[] = [];
+    for (const m of ev.markets || []) {
+      if (m.closed || m.active === false) continue;
+      const names = parseField(m.outcomes);
+      const prices = parseField(m.outcomePrices);
+      const tokens = parseField(m.clobTokenIds);
+      if (!names || !prices || names.length !== prices.length) continue;
+
+      const outcomes: Outcome[] = [];
+      let sum = 0;
+      for (let i = 0; i < names.length; i++) {
+        const mm = priceMetrics(Number(prices[i]));
+        if (!mm) continue;
+        sum += mm.price;
+        outcomes.push({
+          name: names[i],
+          price: mm.price,
+          impliedPct: mm.impliedPct,
+          decimalOdds: mm.decimalOdds,
+          tokenId: tokens && tokens[i] ? tokens[i] : undefined,
+        });
+      }
+      if (!outcomes.length) continue;
+      markets.push({
+        question: m.question || title,
+        group: marketGroup(m.question || ""),
+        outcomes,
+        overhead: Math.round((sum - 1) * 1000) / 1000,
+      });
+    }
+    if (!markets.length) continue;
+    markets.sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group]);
+
+    const kickoff = kickoffOf(ev);
+    out.push({
+      title,
+      slug: ev.slug,
+      endDate: ev.endDate,
+      kickoff,
+      volume24hr: ev.volume24hr,
+      live: isLiveNow(kickoff, ev.closed),
+      markets,
+    });
+  }
   return out;
 }
 

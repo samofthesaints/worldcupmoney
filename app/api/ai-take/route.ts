@@ -35,14 +35,22 @@ export async function POST(req: Request) {
 Match: ${match}
 Current Polymarket odds: ${oddsLine}
 
-Use web search to find the most recent news for THIS match: team form, injuries/suspensions, lineup news, motivation/stakes, and anything that moved sentiment in the last few days.
+Use web search to research THIS specific match and gather:
+- FIFA world rankings of both teams
+- recent form (each team's last ~5 results) and any momentum
+- head-to-head history
+- injuries, suspensions, and lineup/rotation news
+- what's at stake (group situation, must-win, etc.)
 
-Then write a concise take (max ~160 words, plain text, no markdown headers):
-1. 2-3 sentences of the key, current context you found.
-2. Your lean: which side looks like the better value vs the Polymarket price, or "no clear edge".
+Then write a concise take (max ~180 words, plain text, no markdown headers):
+1. 2-4 sentences of the key, current context you found (rankings, form, injuries).
+2. Your recommended bet and why it's value vs the Polymarket price — this can be a
+   moneyline pick, a total-goals lean (over/under), OR a player prop (e.g. "X to score 2+")
+   if the matchup supports it. If the price already looks fair, say "no clear edge".
 3. A confidence label: Low, Medium, or High.
 
-Be honest: prediction markets are efficient and hard to beat. If the price looks fair, say there's no edge. End with: "Not financial advice — bet small."`;
+Be honest: prediction markets are efficient and hard to beat. Don't manufacture an edge.
+End with: "Not financial advice — bet small."`;
 
   try {
     const client = new Anthropic({ apiKey: key });

@@ -46,7 +46,7 @@ export function SuggestionsPanel({ limit = 6 }: { limit?: number }) {
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" /> Suggested bets
         </CardTitle>
-        <span className="text-[11px] text-tertiary">signals, not guarantees</span>
+        <span className="text-[11px] text-tertiary">live + upcoming · signals, not guarantees</span>
       </CardHeader>
       <CardContent className="flex-1 space-y-2.5 overflow-y-auto">
         {items === null && [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full" />)}
@@ -78,7 +78,7 @@ function SuggestionItem({ s, rank }: { s: Suggestion; rank: number }) {
       const r = await fetch("/api/ai-take", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ match: s.match, odds: [{ name: s.pick, price: s.price }] }),
+        body: JSON.stringify({ match: s.match, odds: s.odds?.length ? s.odds : [{ name: s.pick, price: s.price }] }),
       });
       const d = await r.json();
       d.ok ? setTake(d.take) : setErr(d.error || "AI take unavailable");

@@ -85,7 +85,9 @@ export async function buildSuggestions(events: MatchEvent[]): Promise<Suggestion
       score: Math.round(bestScore * 1000) / 10,
       signals,
       reasoning,
+      odds: ml.outcomes.map((o) => ({ name: o.name, price: o.price })),
       endDate: ev.endDate,
+      kickoff: ev.kickoff,
       live: ev.live,
     });
   }
