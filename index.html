@@ -4,236 +4,453 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>World Cup Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b1220; --card:#141d2e; --line:#243149; --ink:#e8eef7; --mut:#93a3bd;
-    --grn:#34d399; --red:#f87171; --acc:#60a5fa; --warn:#fbbf24;
+    --bg-canvas:#0A0A0B; --bg-surface:#141416; --bg-surface-2:#1C1C1F;
+    --bg-surface-3:#26262A; --bg-inverse:#E8EAE3;
+    --border-subtle:#26262A; --border-strong:#3A3A40;
+    --text-primary:#F5F5F4; --text-secondary:#A1A1AA;
+    --text-tertiary:#6B6B73; --text-inverse:#0A0A0B;
+    --accent:#E8501F; --accent-hover:#FF6A3D; --accent-muted:#3A1E14;
+    --yes:#22C55E; --yes-muted:#0F2E1C; --no:#EF4444; --no-muted:#34161A;
+    --warning:#EAB308; --info:#60A5FA;
+    --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:20px;
+    --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;
-    align-items:baseline;gap:12px;flex-wrap:wrap}
-  header h1{font-size:20px;margin:0}
-  header .tag{color:var(--mut);font-size:13px}
-  main{max-width:1080px;margin:0 auto;padding:22px;display:grid;gap:18px;
-    grid-template-columns:1fr 1fr}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
-  .card h2{margin:0 0 12px;font-size:15px;letter-spacing:.02em;color:var(--mut);
-    text-transform:uppercase}
-  .full{grid-column:1/-1}
-  label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
-  input,select{width:100%;padding:9px 10px;background:#0d1626;border:1px solid var(--line);
-    border-radius:8px;color:var(--ink);font-size:14px}
-  button{cursor:pointer;border:1px solid var(--line);background:#1c2942;color:var(--ink);
-    padding:9px 14px;border-radius:8px;font-size:14px}
-  button:hover{background:#243149}
-  button.primary{background:var(--acc);border-color:var(--acc);color:#06101f;font-weight:600}
-  button.win{background:var(--grn);border-color:var(--grn);color:#04130c}
-  button.lose{background:var(--red);border-color:var(--red);color:#1a0606}
-  button.ghost{background:transparent}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-  .row>div{flex:1;min-width:120px}
-  .stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
-  .stat:last-child{border:0}
-  .big{font-size:30px;font-weight:700}
-  .grn{color:var(--grn)} .red{color:var(--red)} .mut{color:var(--mut)} .warn{color:var(--warn)}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
-  th{color:var(--mut);font-weight:600}
-  .pill{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line)}
-  .pill.open{color:var(--acc)} .pill.won{color:var(--grn)} .pill.lost{color:var(--red)}
-  .note{font-size:12.5px;color:var(--mut);background:#0d1626;border:1px solid var(--line);
-    border-radius:8px;padding:10px;margin-top:10px}
-  .mkt{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px}
-  .mkt .q{font-weight:600;margin-bottom:6px}
-  .out{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}
-  .out button{padding:3px 8px;font-size:12px}
-  .hint{font-size:12px;color:var(--mut)}
-  @media(max-width:820px){main{grid-template-columns:1fr}}
+  html,body{margin:0}
+  body{background:var(--bg-canvas);color:var(--text-primary);font-family:var(--font-sans);
+    font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .grn{color:var(--yes)} .red{color:var(--no)} .sec{color:var(--text-secondary)}
+  .ter{color:var(--text-tertiary)} .warn{color:var(--warning)} .acc{color:var(--accent)}
+  .up{font-feature-settings:"tnum"}
+
+  /* top bar */
+  header{height:64px;border-bottom:1px solid var(--border-subtle);display:flex;
+    align-items:center;gap:24px;padding:0 24px;position:sticky;top:0;background:var(--bg-canvas);z-index:20}
+  .logo{font-weight:600;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+  nav{display:flex;gap:4px}
+  nav button{background:none;border:0;color:var(--text-secondary);font-family:var(--font-sans);
+    font-size:13px;font-weight:500;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent}
+  nav button:hover{color:var(--text-primary)}
+  nav button.on{color:var(--text-primary);border-bottom-color:var(--accent)}
+  .spacer{flex:1}
+  .pill{font-family:var(--font-mono);font-variant-numeric:tabular-nums;background:var(--bg-surface-2);
+    border:1px solid var(--border-subtle);border-radius:9999px;padding:7px 14px;font-size:13px;font-weight:500}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);cursor:pointer;
+    background:var(--bg-surface-2);border:1px solid var(--border-subtle);border-radius:9999px;padding:6px 12px}
+  .toggle .dot{width:8px;height:8px;border-radius:9999px;background:var(--text-tertiary)}
+  .toggle.on{color:var(--text-primary)} .toggle.on .dot{background:var(--yes);box-shadow:0 0 8px var(--yes)}
+
+  main{max-width:1320px;margin:0 auto;padding:24px}
+  .grid{display:grid;gap:24px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:900px){.cols-3,.cols-2{grid-template-columns:1fr}}
+  .hide{display:none}
+
+  /* cards */
+  .card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px}
+  .card.light{background:var(--bg-inverse);color:var(--text-inverse)}
+  .card.light .sec{color:#3f3f46} .card.light .ter{color:#52525b}
+  .card-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .label{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-tertiary)}
+  .card.light .label{color:#52525b}
+  h3{font-size:15px;font-weight:600;margin:0}
+  .display{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:44px;
+    line-height:1.05;font-weight:500;letter-spacing:-.01em}
+  .figure{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:500}
+  .delta{font-family:var(--font-mono);font-size:12px;font-weight:500;border-radius:9999px;
+    padding:2px 8px;display:inline-block}
+  .delta.pos{background:var(--yes-muted);color:var(--yes)} .delta.neg{background:var(--no-muted);color:var(--no)}
+
+  /* buttons */
+  button.btn{font-family:var(--font-sans);font-size:13px;font-weight:500;border-radius:var(--radius-md);
+    height:40px;padding:0 16px;cursor:pointer;border:1px solid var(--border-subtle);
+    background:var(--bg-surface-2);color:var(--text-primary)}
+  button.btn:hover{background:var(--bg-surface-3)}
+  button.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.btn.primary:hover{background:var(--accent-hover)}
+  button.btn.sm{height:32px;padding:0 12px;font-size:12px}
+  button.btn:disabled{opacity:.4;cursor:not-allowed}
+  .chip{font-family:var(--font-mono);font-size:12px;border-radius:9999px;border:1px solid var(--border-subtle);
+    background:var(--bg-surface-2);color:var(--text-secondary);padding:5px 10px;cursor:pointer}
+  .chip:hover{background:var(--bg-surface-3);color:var(--text-primary)}
+
+  input,select{width:100%;font-family:var(--font-sans);font-size:14px;background:var(--bg-surface-2);
+    border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-primary)}
+  input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-muted)}
+  input.mono{font-family:var(--font-mono)}
+  .field{margin-top:12px}
+  .stake-wrap{position:relative}
+  .stake-wrap .cur{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);font-family:var(--font-mono)}
+  .stake-wrap input{padding-left:24px}
+
+  /* market cards */
+  .mkt{border-top:1px solid var(--border-subtle);padding:16px 0}
+  .mkt:first-child{border-top:0;padding-top:0}
+  .mkt-q{font-size:13px;color:var(--text-secondary);margin-bottom:10px;display:flex;gap:8px;align-items:center}
+  .grp{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-tertiary);
+    border:1px solid var(--border-subtle);border-radius:9999px;padding:2px 7px}
+  .probbar{display:flex;height:8px;border-radius:9999px;overflow:hidden;margin-bottom:10px;background:var(--bg-surface-2)}
+  .probbar > i{display:block;height:100%}
+  .outs{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+  .outbtn{text-align:left;border:1px solid var(--border-subtle);background:var(--bg-surface-2);
+    border-radius:var(--radius-md);padding:10px 12px;cursor:pointer;transition:background .15s}
+  .outbtn:hover{background:var(--bg-surface-3)}
+  .outbtn .nm{font-size:13px;color:var(--text-primary);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .outbtn .pr{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:18px;font-weight:500}
+  .outbtn .ip{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary)}
+  .ev-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:12px}
+  .ev-title{font-size:16px;font-weight:600}
+  .badge{font-size:10px;letter-spacing:.05em;text-transform:uppercase;border-radius:9999px;padding:3px 8px}
+  .badge.soon{background:rgba(234,179,8,.12);color:var(--warning)}
+  .flash{animation:flash .9s ease}
+  @keyframes flash{0%{background:var(--accent-muted)}100%{background:transparent}}
+
+  /* table */
+  table{width:100%;border-collapse:collapse}
+  th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-tertiary);
+    text-align:left;font-weight:500;padding:8px 8px;border-bottom:1px solid var(--border-subtle)}
+  td{padding:11px 8px;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}
+  th.num{text-align:right}
+  .sidechip{font-size:11px;border-radius:9999px;padding:2px 9px;border:1px solid var(--border-subtle)}
+  .st-open{color:var(--info)} .st-won{color:var(--yes)} .st-lost{color:var(--no)}
+
+  .note{font-size:12.5px;color:var(--text-secondary);background:var(--bg-surface-2);
+    border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:12px;margin-top:14px;line-height:1.5}
+  .empty{text-align:center;color:var(--text-tertiary);padding:28px 12px;font-size:13px}
+
+  /* bet slip */
+  #slip{position:fixed;top:0;right:0;height:100vh;width:360px;background:var(--bg-surface);
+    border-left:1px solid var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,.5);
+    transform:translateX(110%);transition:transform .25s ease;z-index:40;padding:24px;overflow:auto}
+  #slip.open{transform:none}
+  #slip .x{position:absolute;top:18px;right:18px;background:none;border:0;color:var(--text-secondary);font-size:18px;cursor:pointer}
+  .slip-stat{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--border-subtle);font-size:13px}
+  .slip-stat .mono{font-size:14px}
+
+  /* toast */
+  #toast{position:fixed;bottom:24px;right:24px;z-index:50;display:flex;flex-direction:column;gap:10px}
+  .toast{background:var(--bg-surface-2);border:1px solid var(--border-subtle);border-left:3px solid var(--accent);
+    border-radius:var(--radius-sm);padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;
+    animation:rise .25s ease}
+  .toast.yes{border-left-color:var(--yes)} .toast.no{border-left-color:var(--no)} .toast.info{border-left-color:var(--info)}
+  @keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .skel{background:var(--bg-surface-2);border-radius:var(--radius-sm);height:14px;animation:sh 1.2s infinite}
+  @keyframes sh{0%,100%{opacity:.5}50%{opacity:1}}
 </style>
 </head>
 <body>
 <header>
-  <h1>⚽ World Cup Money</h1>
-  <span class="tag">compound smart, bet small — you place the bets, this keeps the math &amp; the record honest</span>
+  <span class="logo">⚽ World Cup Money</span>
+  <nav>
+    <button class="on" data-tab="markets" onclick="tab('markets')">Markets</button>
+    <button data-tab="portfolio" onclick="tab('portfolio')">Portfolio</button>
+    <button data-tab="planner" onclick="tab('planner')">Planner</button>
+  </nav>
+  <span class="spacer"></span>
+  <div class="toggle" id="autoBtn" onclick="toggleAuto()"><span class="dot"></span><span id="autoLbl">Auto-refresh off</span></div>
+  <span class="pill" id="balPill">$0.00</span>
 </header>
+
 <main>
 
-  <!-- BANKROLL -->
-  <section class="card">
-    <h2>Today's bankroll</h2>
-    <div class="big" id="bankroll">$0.00</div>
-    <div class="stat"><span class="mut">Started with</span><span id="start">$0.00</span></div>
-    <div class="stat"><span class="mut">Profit today</span><span id="profit">$0.00</span></div>
-    <div class="stat"><span class="mut">Stop-loss floor</span><span id="stop">—</span></div>
-    <div id="stopWarn"></div>
-    <div class="row" style="margin-top:12px">
-      <div><label>Set starting bankroll ($)</label><input id="startIn" type="number" step="1" placeholder="e.g. 20"></div>
-      <div><label>Stop-loss floor ($)</label><input id="stopIn" type="number" step="1" placeholder="e.g. 8"></div>
-      <div style="flex:0"><button class="primary" onclick="newSession()">Start day</button></div>
+  <!-- ===================== MARKETS ===================== -->
+  <section id="t-markets">
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <div class="label" style="margin-bottom:6px">Search markets</div>
+          <input id="q" placeholder="Team name (Brazil, Croatia…) — blank = all World Cup matches"
+            onkeydown="if(event.key==='Enter')loadMarkets()">
+        </div>
+        <button class="btn primary" onclick="loadMarkets()">Fetch odds</button>
+      </div>
+      <div class="note">Each card is one match with every market Polymarket lists for it — moneyline
+        (win / draw / win), total goals, and exact scores (e.g. <b>2–2</b>). Price = implied probability
+        (64¢ ≈ 64% likely). Click any outcome to open a bet slip. You place the real bet on Polymarket.</div>
     </div>
-    <div class="note">Compounding rolls winnings forward, so one loss can wipe a streak.
-      A stop-loss tells you when to walk away. Only bet money you're fine losing.</div>
+    <div id="markets"></div>
   </section>
 
-  <!-- COMPOUNDING PLANNER -->
-  <section class="card">
-    <h2>Compounding planner</h2>
-    <label>Match prices for each leg (Polymarket price, 0–1, comma separated)</label>
-    <input id="legs" placeholder="e.g. 0.62, 0.55, 0.70, 0.48" oninput="plan()">
-    <div class="row">
-      <div><label>Start from ($)</label><input id="planStart" type="number" step="1" oninput="plan()"></div>
-      <div><label>Stake fraction per leg</label>
-        <select id="frac" onchange="plan()">
-          <option value="1">100% (full roll-over)</option>
-          <option value="0.5">50%</option>
-          <option value="0.33">33%</option>
-          <option value="0.25">25%</option>
-        </select></div>
+  <!-- ===================== PORTFOLIO ===================== -->
+  <section id="t-portfolio" class="hide">
+    <div class="grid cols-3" style="margin-bottom:24px">
+      <div class="card light">
+        <div class="card-h"><span class="label">Portfolio value</span></div>
+        <div class="display" id="pv">$0.00</div>
+        <div style="margin-top:10px"><span class="delta pos" id="pvDelta">+$0.00</span></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="label">Realized win rate</span></div>
+        <div class="figure" id="winrate">—</div>
+        <div class="ter mono" id="winsub" style="margin-top:8px;font-size:12px">no settled bets yet</div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="label">Stop-loss floor</span></div>
+        <div class="figure" id="stopFig">—</div>
+        <div id="stopState" class="ter mono" style="margin-top:8px;font-size:12px">not set</div>
+      </div>
     </div>
-    <div id="planOut" style="margin-top:12px"></div>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-h"><h3>Start a session</h3></div>
+        <div class="field"><div class="label" style="margin-bottom:6px">Starting portfolio ($)</div>
+          <div class="stake-wrap"><span class="cur">$</span><input id="startIn" class="mono" type="number" step="1" placeholder="20"></div></div>
+        <div class="field"><div class="label" style="margin-bottom:6px">Stop-loss floor ($)</div>
+          <div class="stake-wrap"><span class="cur">$</span><input id="stopIn" class="mono" type="number" step="1" placeholder="8"></div></div>
+        <button class="btn primary" style="margin-top:16px;width:100%" onclick="newSession()">Start day</button>
+        <div class="note">Compounding rolls winnings forward, so one loss ends the streak. The stop-loss is
+          the hard line where you walk away. Only stake money you're fine losing.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Open positions &amp; activity</h3></div>
+        <table><thead><tr>
+          <th>Match</th><th>Pick</th><th class="num">Stake</th><th class="num">Odds</th>
+          <th class="num">Return</th><th>Status</th><th></th>
+        </tr></thead><tbody id="bets"></tbody></table>
+        <div id="emptyBets" class="empty">No positions yet — fetch odds and place a bet.</div>
+      </div>
+    </div>
   </section>
 
-  <!-- LIVE ODDS -->
-  <section class="card full">
-    <h2>Live Polymarket odds</h2>
-    <div class="row">
-      <div style="flex:3"><label>Search markets (team name, or leave blank for World Cup / match markets)</label>
-        <input id="q" placeholder="e.g. Brazil  •  Mexico  •  World Cup" onkeydown="if(event.key==='Enter')loadMarkets()"></div>
-      <div style="flex:0"><button class="primary" onclick="loadMarkets()">Fetch odds</button></div>
+  <!-- ===================== PLANNER ===================== -->
+  <section id="t-planner" class="hide">
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-h"><h3>Compounding planner</h3></div>
+        <div class="field"><div class="label" style="margin-bottom:6px">Leg prices (Polymarket price 0–1, comma separated)</div>
+          <input id="legs" class="mono" placeholder="0.62, 0.55, 0.70, 0.48" oninput="plan()"></div>
+        <div class="field" style="display:flex;gap:12px">
+          <div style="flex:1"><div class="label" style="margin-bottom:6px">Start from ($)</div>
+            <div class="stake-wrap"><span class="cur">$</span><input id="planStart" class="mono" type="number" step="1" oninput="plan()"></div></div>
+          <div style="flex:1"><div class="label" style="margin-bottom:6px">Stake fraction / leg</div>
+            <select id="frac" onchange="plan()">
+              <option value="1">100% (full roll-over)</option>
+              <option value="0.5">50%</option><option value="0.33">33%</option><option value="0.25">25%</option>
+            </select></div>
+        </div>
+        <button class="btn sm" style="margin-top:14px" onclick="useBalance()">Use my portfolio value</button>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Projection</h3></div>
+        <div id="planOut"><div class="empty">Enter a start amount and leg prices.</div></div>
+      </div>
     </div>
-    <div class="hint" style="margin-top:6px">Price = market's implied probability. Click a side to pre-fill a bet below. You still place the real bet on Polymarket.</div>
-    <div id="markets" style="margin-top:12px"></div>
-  </section>
-
-  <!-- LOG A BET -->
-  <section class="card">
-    <h2>Log a bet</h2>
-    <label>Match / market</label><input id="bMatch" placeholder="Brazil vs Haiti">
-    <label>Your pick</label><input id="bPick" placeholder="Brazil to win">
-    <div class="row">
-      <div><label>Stake ($)</label><input id="bStake" type="number" step="0.5"></div>
-      <div><label>Price (0–1)</label><input id="bPrice" type="number" step="0.01" oninput="betPreview()"></div>
+    <div class="card" style="margin-top:24px">
+      <div class="note" style="margin:0"><b class="warn">Timing rule:</b> a match market only pays out after
+        that match ends, so you can only chain matches with staggered kickoffs. The final group matchday runs
+        all 6 matches at once — no compounding those days.</div>
     </div>
-    <div id="betPrev" class="hint" style="margin-top:6px"></div>
-    <button class="primary" style="margin-top:10px" onclick="addBet()">Add bet</button>
-  </section>
-
-  <!-- BET LOG -->
-  <section class="card">
-    <h2>Bet log</h2>
-    <table><thead><tr><th>Match</th><th>Pick</th><th>Stake</th><th>Odds</th><th>Return</th><th>Status</th><th></th></tr></thead>
-      <tbody id="bets"></tbody></table>
-    <div id="emptyBets" class="hint" style="margin-top:8px">No bets yet.</div>
   </section>
 
 </main>
+
+<!-- BET SLIP -->
+<div id="slip">
+  <button class="x" onclick="closeSlip()">✕</button>
+  <div class="label">Bet slip</div>
+  <div class="ev-title" id="slipMatch" style="margin:6px 0 2px">—</div>
+  <div class="sec mono" id="slipPick" style="font-size:13px;margin-bottom:16px">—</div>
+  <div class="label" style="margin-bottom:6px">Stake</div>
+  <div class="stake-wrap"><span class="cur">$</span><input id="slipStake" class="mono" type="number" step="0.5" oninput="slipCalc()"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <span class="chip" onclick="addStake(10)">+$10</span>
+    <span class="chip" onclick="addStake(25)">+$25</span>
+    <span class="chip" onclick="addStake(50)">+$50</span>
+    <span class="chip" onclick="maxStake()">Max</span>
+  </div>
+  <div style="margin-top:20px">
+    <div class="slip-stat"><span class="sec">Price</span><span class="mono" id="slipPrice">—</span></div>
+    <div class="slip-stat"><span class="sec">Implied chance</span><span class="mono" id="slipImp">—</span></div>
+    <div class="slip-stat"><span class="sec">Shares</span><span class="mono" id="slipShares">—</span></div>
+    <div class="slip-stat"><span class="sec">Potential payout</span><span class="mono grn" id="slipPay">—</span></div>
+    <div class="slip-stat"><span class="sec">Profit if it hits</span><span class="mono grn" id="slipProfit">—</span></div>
+  </div>
+  <button class="btn primary" style="width:100%;margin-top:20px" onclick="confirmBet()">Log this bet</button>
+  <div class="note">Logging records it here and updates your portfolio when you settle it. Place the actual
+    order on Polymarket yourself.</div>
+</div>
+
+<div id="toast"></div>
+
 <script>
 const $ = id => document.getElementById(id);
-const money = n => (n<0?'-$':'$') + Math.abs(n).toFixed(2);
+const money = n => (n<0?'-$':'$') + Math.abs(+n||0).toFixed(2);
+const esc = s => (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const outColor = i => i===0 ? 'var(--yes)' : (i===1 ? 'var(--no)' : ['#60A5FA','#EAB308','#A78BFA','#F472B6'][(i-2)%4]);
+let STATE = {bankroll:0,starting_bankroll:0,stop_loss:0,bets:[]};
+let SEL = null;            // selected outcome for slip
+let AUTO = false, timer = null;
+let lastPrices = {};       // for flash-on-change
 
 async function api(path, method='GET', body=null){
-  const opt = {method, headers:{'Content-Type':'application/json'}};
-  if(body) opt.body = JSON.stringify(body);
-  const r = await fetch(path, opt);
-  return r.json();
+  const opt={method,headers:{'Content-Type':'application/json'}};
+  if(body) opt.body=JSON.stringify(body);
+  return (await fetch(path,opt)).json();
 }
 
-function render(state){
-  $('bankroll').textContent = money(state.bankroll);
-  $('start').textContent = money(state.starting_bankroll);
-  const p = state.bankroll - state.starting_bankroll;
-  const pe = $('profit'); pe.textContent = (p>=0?'+':'') + money(p);
-  pe.className = p>0?'grn':(p<0?'red':'');
-  $('stop').textContent = state.stop_loss ? money(state.stop_loss) : '—';
-  const sw = $('stopWarn');
-  if(state.stop_loss && state.bankroll <= state.stop_loss && state.starting_bankroll>0){
-    sw.innerHTML = '<div class="note" style="border-color:var(--red)"><b class="red">Stop-loss hit.</b> Time to walk away for today.</div>';
-  } else sw.innerHTML = '';
+/* ---- tabs ---- */
+function tab(name){
+  ['markets','portfolio','planner'].forEach(t=>{
+    $('t-'+t).classList.toggle('hide', t!==name);
+    document.querySelector(`nav button[data-tab="${t}"]`).classList.toggle('on', t===name);
+  });
+}
 
-  const tb = $('bets'); tb.innerHTML='';
-  (state.bets||[]).slice().reverse().forEach(b=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${esc(b.match)}</td><td>${esc(b.pick)}</td><td>${money(b.stake)}</td>
-      <td>${b.decimal_odds}×</td><td>${money(b.to_return)}</td>
-      <td><span class="pill ${b.status}">${b.status}</span></td>
-      <td style="white-space:nowrap">${
+/* ---- portfolio render ---- */
+function renderState(s){
+  STATE=s;
+  $('balPill').textContent = money(s.bankroll);
+  $('pv').textContent = money(s.bankroll);
+  const p = s.bankroll - s.starting_bankroll;
+  const d=$('pvDelta'); d.textContent=(p>=0?'+':'')+money(p);
+  d.className='delta '+(p>=0?'pos':'neg');
+  $('stopFig').textContent = s.stop_loss ? money(s.stop_loss) : '—';
+  const ss=$('stopState');
+  if(s.stop_loss && s.starting_bankroll>0 && s.bankroll<=s.stop_loss){
+    ss.innerHTML='<span class="red">Hit — walk away today.</span>';
+  } else ss.textContent = s.stop_loss ? 'active' : 'not set';
+
+  const settled=(s.bets||[]).filter(b=>b.status!=='open');
+  const wins=settled.filter(b=>b.status==='won').length;
+  $('winrate').textContent = settled.length ? Math.round(wins/settled.length*100)+'%' : '—';
+  $('winsub').textContent = settled.length ? `${wins} of ${settled.length} settled bets won` : 'no settled bets yet';
+
+  const tb=$('bets'); tb.innerHTML='';
+  (s.bets||[]).slice().reverse().forEach(b=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(b.match)}</td><td class="sec">${esc(b.pick)}</td>
+      <td class="num">${money(b.stake)}</td><td class="num">${b.decimal_odds}×</td>
+      <td class="num grn">${money(b.to_return)}</td>
+      <td><span class="sidechip st-${b.status}">${b.status}</span></td>
+      <td style="text-align:right;white-space:nowrap">${
         b.status==='open'
-        ? `<button class="win" onclick="settle(${b.id},'won')">Won</button>
-           <button class="lose" onclick="settle(${b.id},'lost')">Lost</button>`
-        : `<button class="ghost" onclick="del(${b.id})">✕</button>`}</td>`;
+        ? `<button class="btn sm" style="background:var(--yes-muted);color:var(--yes);border-color:rgba(34,197,94,.3)" onclick="settle(${b.id},'won')">Won</button>
+           <button class="btn sm" style="background:var(--no-muted);color:var(--no);border-color:rgba(239,68,68,.3);margin-left:6px" onclick="settle(${b.id},'lost')">Lost</button>`
+        : `<button class="btn sm" onclick="del(${b.id})">✕</button>`}</td>`;
     tb.appendChild(tr);
   });
-  $('emptyBets').style.display = (state.bets||[]).length ? 'none':'block';
+  $('emptyBets').style.display=(s.bets||[]).length?'none':'block';
 }
-function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
-async function refresh(){ render(await api('/api/state')); }
+async function refresh(){ renderState(await api('/api/state')); }
 async function newSession(){
-  render(await api('/api/session','POST',{
-    starting_bankroll:+$('startIn').value||0, stop_loss:+$('stopIn').value||0}));
+  renderState(await api('/api/session','POST',{starting_bankroll:+$('startIn').value||0,stop_loss:+$('stopIn').value||0}));
+  toast('Session started','info');
 }
-async function addBet(){
-  const s = await api('/api/bets','POST',{
-    match:$('bMatch').value, pick:$('bPick').value,
-    stake:+$('bStake').value, price:+$('bPrice').value});
-  if(s.error){ alert(s.error); return; }
-  $('bStake').value=''; $('bPrice').value=''; $('betPrev').textContent='';
-  render(s);
-}
-async function settle(id,result){ render(await api('/api/settle','POST',{id,result})); }
-async function del(id){ render(await api('/api/delete','POST',{id})); }
+async function settle(id,result){ renderState(await api('/api/settle','POST',{id,result}));
+  toast(result==='won'?'Marked won 🎉':'Marked lost', result); }
+async function del(id){ renderState(await api('/api/delete','POST',{id})); }
 
-function betPreview(){
-  const p = +$('bPrice').value;
-  if(p>0 && p<1){
-    $('betPrev').textContent = `Implied ${(p*100).toFixed(1)}% • decimal odds ${(1/p).toFixed(2)}× • $1 returns ${(1/p).toFixed(2)} on a win`;
-  } else $('betPrev').textContent = '';
-}
+/* ---- markets ---- */
+function closingSoon(end){ if(!end) return false; const t=Date.parse(end); return t && (t-Date.now()) < 24*3600*1000 && t>Date.now(); }
 
-async function loadMarkets(){
-  const box = $('markets'); box.innerHTML = '<div class="hint">Loading…</div>';
-  const r = await api('/api/markets?q=' + encodeURIComponent($('q').value.trim()));
+async function loadMarkets(silent){
+  const box=$('markets');
+  if(!silent) box.innerHTML='<div class="card"><div class="skel" style="width:40%;margin-bottom:12px"></div><div class="skel" style="width:80%"></div></div>';
+  const r=await api('/api/markets?q='+encodeURIComponent($('q').value.trim()));
   if(!r.ok && r.error){
-    box.innerHTML = `<div class="note" style="border-color:var(--warn)"><b class="warn">Couldn't reach Polymarket.</b> ${esc(r.error)}<br>You can still log bets manually below.</div>`;
+    box.innerHTML=`<div class="card"><div class="warn" style="font-weight:600;margin-bottom:6px">Couldn't reach Polymarket</div>
+      <div class="sec">${esc(r.error)}</div><div class="note">You can still log bets manually from the Portfolio tab.</div></div>`;
     return;
   }
-  if(!r.markets.length){ box.innerHTML = '<div class="hint">No matching markets found. Try a team name, or log the bet manually.</div>'; return; }
-  box.innerHTML = '';
-  r.markets.forEach(m=>{
-    const d = document.createElement('div'); d.className='mkt';
-    let html = `<div class="q">${esc(m.question)}</div>`;
-    m.outcomes.forEach(o=>{
-      html += `<div class="out"><span>${esc(o.name)} — <span class="mut">${o.implied_pct}% • ${o.decimal_odds}×</span></span>
-        <button onclick="pick('${esc(m.question)}','${esc(o.name)}',${o.price})">Use ${o.price}</button></div>`;
+  if(!r.events || !r.events.length){
+    box.innerHTML='<div class="card"><div class="empty">No matching markets. Try a team name, or check back when more matches open.</div></div>';
+    return;
+  }
+  box.innerHTML='';
+  r.events.forEach(ev=>{
+    const card=document.createElement('div'); card.className='card'; card.style.marginBottom='24px';
+    let h=`<div class="ev-head"><div class="ev-title">${esc(ev.title)}</div>
+      <div>${closingSoon(ev.end_date)?'<span class="badge soon">Closing soon</span>':''}</div></div>`;
+    if(ev.volume24hr) h+=`<div class="ter mono" style="font-size:11px;margin-bottom:14px">24h vol ${money(ev.volume24hr)}</div>`;
+    ev.markets.forEach(m=>{
+      h+=`<div class="mkt"><div class="mkt-q"><span class="grp">${esc(m.group)}</span> ${esc(m.question)}</div>`;
+      // probability bar
+      h+=`<div class="probbar">`+m.outcomes.map((o,i)=>`<i style="width:${o.implied_pct}%;background:${outColor(i)}"></i>`).join('')+`</div>`;
+      h+=`<div class="outs">`+m.outcomes.map((o,i)=>{
+        const key=ev.title+'|'+m.question+'|'+o.name;
+        const flash = lastPrices[key]!==undefined && lastPrices[key]!==o.price ? ' flash':'';
+        lastPrices[key]=o.price;
+        return `<button class="outbtn${flash}" onclick='openSlip(${JSON.stringify(ev.title)},${JSON.stringify(o.name+" — "+m.group)},${o.price})'>
+          <div class="nm">${esc(o.name)}</div>
+          <div class="pr" style="color:${outColor(i)}">${Math.round(o.price*100)}¢</div>
+          <div class="ip">${o.implied_pct}% · ${o.decimal_odds}×</div></button>`;
+      }).join('')+`</div></div>`;
     });
-    if(m.end_date) html += `<div class="hint">ends ${esc(m.end_date)}</div>`;
-    d.innerHTML = html; box.appendChild(d);
+    card.innerHTML=h; box.appendChild(card);
   });
 }
-function pick(match,name,price){
-  $('bMatch').value = match; $('bPick').value = name; $('bPrice').value = price;
-  betPreview(); $('bMatch').scrollIntoView({behavior:'smooth',block:'center'});
+function toggleAuto(){
+  AUTO=!AUTO;
+  $('autoBtn').classList.toggle('on',AUTO);
+  $('autoLbl').textContent = AUTO?'Auto-refresh on':'Auto-refresh off';
+  if(AUTO){ loadMarkets(true); timer=setInterval(()=>loadMarkets(true),30000); }
+  else clearInterval(timer);
 }
 
+/* ---- bet slip ---- */
+function openSlip(match,pick,price){
+  SEL={match,pick,price};
+  $('slipMatch').textContent=match; $('slipPick').textContent=pick;
+  $('slipPrice').textContent=Math.round(price*100)+'¢ ('+price+')';
+  $('slipImp').textContent=(price*100).toFixed(1)+'%';
+  $('slipStake').value=''; slipCalc();
+  $('slip').classList.add('open');
+}
+function closeSlip(){ $('slip').classList.remove('open'); }
+function slipCalc(){
+  const stake=+$('slipStake').value||0, p=SEL?SEL.price:0;
+  if(stake>0 && p>0){
+    const shares=stake/p, pay=stake/p, profit=pay-stake;
+    $('slipShares').textContent=shares.toFixed(2);
+    $('slipPay').textContent=money(pay); $('slipProfit').textContent='+'+money(profit);
+  } else { $('slipShares').textContent='—'; $('slipPay').textContent='—'; $('slipProfit').textContent='—'; }
+}
+function addStake(n){ $('slipStake').value=(+$('slipStake').value||0)+n; slipCalc(); }
+function maxStake(){ $('slipStake').value=(STATE.bankroll||0).toFixed(2); slipCalc(); }
+async function confirmBet(){
+  const stake=+$('slipStake').value||0;
+  if(!SEL||stake<=0){ toast('Enter a stake','no'); return; }
+  const s=await api('/api/bets','POST',{match:SEL.match,pick:SEL.pick,stake,price:SEL.price});
+  if(s.error){ toast(s.error,'no'); return; }
+  renderState(s); closeSlip(); toast('Bet logged ✓','yes');
+}
+
+/* ---- planner ---- */
+function useBalance(){ $('planStart').value=(STATE.bankroll||0).toFixed(0); plan(); }
 async function plan(){
-  const prices = $('legs').value;
-  const start = +$('planStart').value || 0;
-  const fraction = $('frac').value;
-  if(!prices.trim() || !start){ $('planOut').innerHTML = '<div class="hint">Enter a starting amount and leg prices.</div>'; return; }
-  const r = await api(`/api/compound?start=${start}&fraction=${fraction}&prices=${encodeURIComponent(prices)}`);
-  let rows = r.legs.map((l,i)=> l.error
-    ? `<div class="stat"><span class="red">Leg ${i+1}: ${l.error}</span></div>`
-    : `<div class="stat"><span>Leg ${i+1} @ ${l.price} (${l.implied_pct}%)</span><span>stake ${money(l.stake)} → ${money(l.bankroll_if_win)}</span></div>`
+  const prices=$('legs').value, start=+$('planStart').value||0, fraction=$('frac').value;
+  if(!prices.trim()||!start){ $('planOut').innerHTML='<div class="empty">Enter a start amount and leg prices.</div>'; return; }
+  const r=await api(`/api/compound?start=${start}&fraction=${fraction}&prices=${encodeURIComponent(prices)}`);
+  let rows=r.legs.map((l,i)=> l.error
+    ? `<div class="slip-stat"><span class="red">Leg ${i+1}: ${l.error}</span></div>`
+    : `<div class="slip-stat"><span class="sec">Leg ${i+1} · ${Math.round(l.price*100)}¢ (${l.implied_pct}%)</span>
+         <span class="mono">${money(l.stake)} → <span class="grn">${money(l.bankroll_if_win)}</span></span></div>`
   ).join('');
-  $('planOut').innerHTML = rows +
-    `<div class="stat"><span><b>If all legs win</b></span><span class="grn"><b>${money(r.final_if_all_win)}</b> (+${money(r.profit_if_all_win)})</span></div>
-     <div class="note"><b class="warn">Reality check:</b> all ${r.legs.length} legs landing has roughly a
-       <b>${r.combined_hit_prob_pct}%</b> combined chance at these prices. The more legs you chain, the lower that gets.</div>`;
+  $('planOut').innerHTML=rows+
+    `<div class="slip-stat" style="border-bottom:0;margin-top:4px"><span><b>If all legs win</b></span>
+       <span class="mono grn"><b>${money(r.final_if_all_win)}</b> (+${money(r.profit_if_all_win)})</span></div>
+     <div class="note"><b class="warn">Chain success rate:</b> all ${r.legs.length} legs landing has about a
+       <b class="mono">${r.combined_hit_prob_pct}%</b> combined chance at these prices. More legs = lower odds of the full run.</div>`;
 }
 
-refresh();
+/* ---- toast ---- */
+function toast(msg,type='info'){
+  const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg;
+  $('toast').appendChild(t); setTimeout(()=>t.remove(),3200);
+}
+
+refresh(); loadMarkets();
 </script>
 </body>
 </html>

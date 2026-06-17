@@ -100,15 +100,17 @@ def _gamma_get(path):
 
 
 def fetch_markets(query):
-    """Return a simplified, odds-bearing list of active markets matching `query`.
+    """Return active events matching `query`, each with ALL its markets grouped.
 
-    We page through active events sorted by volume and filter by substring on the
-    event title / market question. Each returned item carries its outcomes with
-    computed implied probability and payout.
+    Grouping by event means a single match card shows every bet type Polymarket
+    lists for it: the moneyline (win/draw/win), total-goals, and exact-score
+    markets (0-0, 2-2, ...). Each market's outcomes carry implied probability and
+    payout. We page through active events sorted by 24h volume and filter by
+    substring on the event title or any inner market question.
     """
     terms = [query.lower()] if query else DEFAULT_TERMS
-    results = []
-    seen = set()
+    events_out = []
+    seen_events = set()
     for offset in (0, 100, 200):
         path = ("/events?closed=false&active=true&limit=100&offset=%d"
                 "&order=volume24hr&ascending=false" % offset)
@@ -121,19 +123,19 @@ def fetch_markets(query):
         for ev in events:
             title = (ev.get("title") or "")
             hay = title.lower()
-            if not any(t in hay for t in terms):
-                # also check inner market questions
-                qmatch = any(any(t in (m.get("question") or "").lower() for t in terms)
-                             for m in ev.get("markets", []))
-                if not qmatch:
-                    continue
+            matched = any(t in hay for t in terms) or any(
+                any(t in (m.get("question") or "").lower() for t in terms)
+                for m in ev.get("markets", []))
+            if not matched:
+                continue
+            eid = ev.get("id") or ev.get("slug") or title
+            if eid in seen_events:
+                continue
+            seen_events.add(eid)
+            markets = []
             for m in ev.get("markets", []):
                 if m.get("closed") or not m.get("active", True):
                     continue
-                mid = m.get("id") or m.get("conditionId")
-                if mid in seen:
-                    continue
-                seen.add(mid)
                 outcomes = _parse_json_field(m.get("outcomes"))
                 prices = _parse_json_field(m.get("outcomePrices"))
                 if not outcomes or not prices or len(outcomes) != len(prices):
@@ -145,18 +147,38 @@ def fetch_markets(query):
                         opts.append({"name": name, **metrics})
                 if not opts:
                     continue
-                results.append({
-                    "event": title,
+                markets.append({
                     "question": m.get("question") or title,
-                    "end_date": m.get("endDate") or ev.get("endDate"),
-                    "slug": ev.get("slug"),
-                    "volume24hr": ev.get("volume24hr"),
+                    "group": _market_group(m.get("question") or ""),
                     "outcomes": opts,
                 })
+            if not markets:
+                continue
+            # Moneyline first, then totals, then exact scores, then the rest.
+            order = {"Moneyline": 0, "Total goals": 1, "Exact score": 2, "Other": 3}
+            markets.sort(key=lambda mk: order.get(mk["group"], 3))
+            events_out.append({
+                "title": title,
+                "slug": ev.get("slug"),
+                "end_date": ev.get("endDate"),
+                "volume24hr": ev.get("volume24hr"),
+                "markets": markets,
+            })
         if len(events) < 100:
             break
-    # Highest 24h volume / soonest first-ish: keep stable order from API.
-    return results[:60]
+    return events_out[:40]
+
+
+def _market_group(question):
+    """Best-effort bucket for a market so the UI can label/sort bet types."""
+    q = question.lower()
+    if re.search(r"\b\d+\s*[-–]\s*\d+\b", q) or "exact score" in q or "correct score" in q:
+        return "Exact score"
+    if "total" in q or "goals" in q or "over" in q or "under" in q:
+        return "Total goals"
+    if " vs" in q or "to win" in q or "winner" in q or "draw" in q or "moneyline" in q:
+        return "Moneyline"
+    return "Other"
 
 
 def _parse_json_field(val):
@@ -214,10 +236,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/markets":
             q = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
             try:
-                markets = fetch_markets(q)
-                self._send(200, {"ok": True, "markets": markets})
+                events = fetch_markets(q)
+                self._send(200, {"ok": True, "events": events})
             except Exception as e:
-                self._send(200, {"ok": False, "error": str(e), "markets": []})
+                self._send(200, {"ok": False, "error": str(e), "events": []})
             return
         if path == "/api/compound":
             qs = urllib.parse.parse_qs(parsed.query)
