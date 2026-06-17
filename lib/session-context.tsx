@@ -14,6 +14,7 @@ const blank = (): SessionState => ({
   stopLoss: 0,
   bets: [],
   nextId: 1,
+  importedPositions: [],
 });
 
 type SlipSelection = { match: string; pick: string; price: number };
@@ -26,6 +27,7 @@ type SessionCtx = {
   settle: (id: number, result: "won" | "lost") => void;
   removeBet: (id: number) => void;
   exportCSV: () => void;
+  importSettled: (key: string, match: string, pick: string, stake: number, price: number, result: "won" | "lost") => void;
   slip: SlipSelection | null;
   openSlip: (s: SlipSelection) => void;
   closeSlip: () => void;
@@ -111,6 +113,39 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       return { ...s, bankroll, bets: s.bets.filter((x) => x.id !== id) };
     });
 
+  const importSettled = (
+    key: string,
+    match: string,
+    pick: string,
+    stake: number,
+    price: number,
+    result: "won" | "lost",
+  ) =>
+    setState((s) => {
+      if (s.importedPositions.includes(key)) return s;
+      const m = priceMetrics(price);
+      const toReturn = m ? round2(stake * m.payout) : round2(stake);
+      const bet: Bet = {
+        id: s.nextId,
+        match,
+        pick,
+        stake: round2(stake),
+        price: m ? m.price : round2(price),
+        decimalOdds: m ? m.decimalOdds : 0,
+        toReturn,
+        status: result,
+        placedAt: Date.now(),
+      };
+      const bankroll = round2(result === "won" ? s.bankroll + (toReturn - bet.stake) : s.bankroll - bet.stake);
+      return {
+        ...s,
+        nextId: s.nextId + 1,
+        bets: [...s.bets, bet],
+        bankroll,
+        importedPositions: [...s.importedPositions, key],
+      };
+    });
+
   const exportCSV = () => {
     const rows = [["id", "match", "pick", "stake", "price", "decimal_odds", "to_return", "status", "placed_at"]];
     state.bets.forEach((b) =>
@@ -143,6 +178,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         settle,
         removeBet,
         exportCSV,
+        importSettled,
         slip,
         openSlip: setSlip,
         closeSlip: () => setSlip(null),

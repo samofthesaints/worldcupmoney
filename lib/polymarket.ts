@@ -1,5 +1,6 @@
 import type { Market, MarketGroup, MatchEvent, Outcome, PricePoint } from "./types";
 import { priceMetrics } from "./utils";
+import { attachScores } from "./scores";
 
 const GAMMA = "https://gamma-api.polymarket.com";
 const CLOB = "https://clob.polymarket.com";
@@ -90,6 +91,9 @@ export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
   // rely on the isWorldCup heuristic so we still scope correctly.
   let out = await gather(q, true);
   if (!out.length) out = await gather(q, false);
+
+  // attach live scores / authoritative in-play status (best-effort)
+  await attachScores(out);
 
   out.sort((a, b) => {
     if (a.live !== b.live) return Number(b.live) - Number(a.live);

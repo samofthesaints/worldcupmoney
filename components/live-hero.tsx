@@ -58,6 +58,19 @@ export function LiveHero({ ev, isNext }: { ev: MatchEvent | null; isNext?: boole
 
         <h2 className="text-2xl font-semibold tracking-tight sm:text-[28px]">{ev.title}</h2>
 
+        {ev.score && (ev.score.state === "in" || ev.score.state === "post") && (
+          <div className="mt-2 flex items-center gap-3">
+            <span className="font-mono text-3xl font-semibold tabular-nums">
+              {ev.score.homeScore} <span className="text-tertiary">–</span> {ev.score.awayScore}
+            </span>
+            {(ev.score.clock || ev.score.detail) && (
+              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${live ? "bg-no-muted text-no" : "bg-secondary text-muted-foreground"}`}>
+                {ev.score.clock || ev.score.detail}
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
           {ml.outcomes.slice(0, 3).map((o, i) => (
             <button

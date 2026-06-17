@@ -49,7 +49,11 @@ export function MatchRow({ ev, index }: { ev: MatchEvent; index: number }) {
           <div className="min-w-0">
             <div className="truncate text-[13px] font-medium leading-tight">{ev.title}</div>
             <div className="font-mono text-[10px] text-tertiary">
-              {ev.live ? "Live now" : kickoffLabel(ev.kickoff) || "—"}
+              {ev.live
+                ? ev.score
+                  ? `${ev.score.homeScore}-${ev.score.awayScore} · ${ev.score.clock || ev.score.detail || "Live"}`
+                  : "Live now"
+                : kickoffLabel(ev.kickoff) || "—"}
             </div>
           </div>
         </button>

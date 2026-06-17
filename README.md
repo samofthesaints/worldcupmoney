@@ -38,9 +38,12 @@ web-searches recent team news), sizes your compounding chain, and keeps an hones
 - **🧭 Dashboard overview.** A composed home screen (per `design.md`'s Zajno layout): a **live-game hero** panel
   front and center, your portfolio value + bankroll chart, a live/upcoming **match list**, the **suggested bets**
   panel, and your real Polymarket positions — all on one screen.
-- **👛 Your Polymarket positions.** Paste your wallet address to see your live holdings, value, and P&L pulled
-  read-only from Polymarket's public data API. Never moves funds; the address is stored only in your browser
-  (or set `NEXT_PUBLIC_POLYMARKET_ADDRESS`).
+- **🔴 Live scores.** The hero (and match rows) show the real score + match clock, pulled from ESPN's public
+  World Cup feed, which also makes "live now" detection authoritative (actual game state, not a guess).
+- **👛 Your Polymarket positions.** Type your wallet address (editable in-app, anytime) to see your live holdings,
+  value, and P&L — read-only from Polymarket's public data API; never moves funds, stored only in your browser
+  (or pre-fill with `NEXT_PUBLIC_POLYMARKET_ADDRESS`). Resolved positions get a **Log to bankroll** button that
+  drops the real outcome into your tracker.
 - **📊 Live match odds, compact.** A scannable list of rows (not page-wide cards); tap a row to expand totals,
   exact scores (`2-2`), probability bars, and a 24h price chart. Numbers show the market's **% chance** (with the
   Polymarket ¢ price as the small label). **World Cup matches only** — no tournament futures, no other sports.

@@ -130,7 +130,13 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13px] font-medium leading-tight">{ev.title}</div>
-                    <div className="font-mono text-[10px] text-tertiary">{ev.live ? "Live now" : kickoffLabel(ev.kickoff) || "—"}</div>
+                    <div className="font-mono text-[10px] text-tertiary">
+                      {ev.live
+                        ? ev.score
+                          ? `${ev.score.homeScore}-${ev.score.awayScore} · ${ev.score.clock || ev.score.detail || "Live"}`
+                          : "Live now"
+                        : kickoffLabel(ev.kickoff) || "—"}
+                    </div>
                   </div>
                   <div className="shrink-0 text-right">
                     <div className="font-mono text-sm font-medium" style={{ color: outcomeColor(0) }}>

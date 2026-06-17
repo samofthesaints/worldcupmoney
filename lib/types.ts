@@ -15,6 +15,16 @@ export type Market = {
   overhead: number; // sum of outcome prices - 1 (the vig); lower = better value
 };
 
+export type MatchScore = {
+  home: string;
+  away: string;
+  homeScore: number;
+  awayScore: number;
+  state: string;
+  clock: string;
+  detail: string;
+};
+
 export type MatchEvent = {
   title: string;
   slug?: string;
@@ -22,6 +32,7 @@ export type MatchEvent = {
   kickoff?: string;
   volume24hr?: number;
   live?: boolean;
+  score?: MatchScore;
   markets: Market[];
 };
 
@@ -49,6 +60,7 @@ export type SessionState = {
   stopLoss: number;
   bets: Bet[];
   nextId: number;
+  importedPositions: string[];
 };
 
 export type Signal = {
