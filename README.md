@@ -49,7 +49,19 @@ mistakes and enforces the discipline (like a stop-loss) that's hard to keep in t
 - **⏱️ Live auto-refresh.** Odds re-pull every 30 seconds during matches, with a price-flash on every
   outcome that moved.
 
-## Quickstart
+## Run it on the web (one click)
+
+Want a link you just open — on your laptop or your phone — with live, auto-refreshing
+odds and nothing to install? Deploy your own copy to Vercel's free tier:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsamofthesaints%2Fworldcupmoney)
+
+It needs no configuration — the included serverless function (`api/markets.js`) proxies
+Polymarket's odds so the page works anywhere, and your bankroll and bets are stored
+privately in your own browser. Once connected to this repo, every update redeploys
+automatically.
+
+## Run it locally
 
 You need [Python 3](https://www.python.org/downloads/). That's the only requirement — no `pip install`,
 no framework, no build step. One command downloads and launches it (your browser opens automatically):
