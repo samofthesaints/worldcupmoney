@@ -24,16 +24,52 @@ function norm(s: string): string {
     .trim();
 }
 
+// Polymarket uses formal names ("Korea Republic", "Türkiye", "Bosnia-Herzegovina")
+// that differ from ESPN's; canonicalize both sides before matching.
+const ALIASES: Record<string, string> = {
+  "korea republic": "korea",
+  "south korea": "korea",
+  "korea dpr": "north korea",
+  turkiye: "turkey",
+  "bosnia-herzegovina": "bosnia",
+  "bosnia and herzegovina": "bosnia",
+  "bosnia herzegovina": "bosnia",
+  usa: "united states",
+  us: "united states",
+  "china pr": "china",
+  czechia: "czech republic",
+  "cote divoire": "ivory coast",
+  "cote d ivoire": "ivory coast",
+  "cabo verde": "cape verde",
+  "ir iran": "iran",
+};
+
+function canon(s: string): string {
+  const n = norm(s);
+  return ALIASES[n] || n;
+}
+
+function canonTitle(title: string): string {
+  let t = norm(title);
+  for (const [k, v] of Object.entries(ALIASES)) {
+    if (t.includes(k)) t = t.replace(k, v);
+  }
+  return t;
+}
+
 function teamInTitle(team: string, title: string): boolean {
   const nt = norm(title);
-  const full = norm(team);
-  if (!full) return false;
-  if (nt.includes(full)) return true;
-  // fall back to the distinctive words (e.g. "South Korea" -> "korea")
-  return full
-    .split(" ")
-    .filter((w) => w.length > 3)
-    .some((w) => nt.includes(w));
+  const ct = canonTitle(title);
+  const cands = [norm(team), canon(team)].filter(Boolean);
+  for (const c of cands) {
+    if (nt.includes(c) || ct.includes(c)) return true;
+  }
+  return cands.some((c) =>
+    c
+      .split(" ")
+      .filter((w) => w.length > 3)
+      .some((w) => nt.includes(w) || ct.includes(w)),
+  );
 }
 
 async function fetchScoreboard(): Promise<ScoreInfo[]> {

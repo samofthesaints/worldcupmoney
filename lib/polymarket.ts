@@ -155,6 +155,38 @@ async function fetchEventsPage(tagSlug?: string): Promise<any[]> {
   return all;
 }
 
+function nlc(s: string): string {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+function teamsFromTitle(title: string): [string, string] | null {
+  const parts = title.split(/\s+vs\.?\s+|\s+v\.?\s+/i);
+  if (parts.length < 2) return null;
+  return [parts[0].trim(), parts[1].replace(/\(.*\)/, "").trim()];
+}
+
+function teamEq(a: string, b: string): boolean {
+  const x = nlc(a);
+  const y = nlc(b);
+  return !!x && !!y && (x === y || x.includes(y) || y.includes(x));
+}
+
+// Polymarket lists a match's result as separate Yes/No markets, one per outcome
+// (groupItemTitle = "England" / "Draw" / "Croatia"). Bucket each binary outcome.
+function categorizeOutcome(label: string, teams: [string, string] | null): MarketGroup {
+  const l = nlc(label);
+  if (/^(draw|tie|the draw)$/.test(l)) return "Moneyline";
+  if (teams && (teamEq(teams[0], label) || teamEq(teams[1], label))) return "Moneyline";
+  if (/^\d+\s*[-–]\s*\d+$/.test(label.trim())) return "Exact score";
+  if (/over|under|total|goals/.test(l)) return "Total goals";
+  return "Other";
+}
+
+function sortMoneyline(outs: Outcome[], teams: [string, string]): Outcome[] {
+  const rank = (n: string) => (teamEq(teams[0], n) ? 0 : /draw|tie/i.test(n) ? 1 : teamEq(teams[1], n) ? 2 : 3);
+  return outs.slice().sort((a, b) => rank(a.name) - rank(b.name));
+}
+
 function buildEvents(raw: any[], q: string, strict: boolean): MatchEvent[] {
   const out: MatchEvent[] = [];
   const seen = new Set<string>();
@@ -175,7 +207,10 @@ function buildEvents(raw: any[], q: string, strict: boolean): MatchEvent[] {
     if (seen.has(eid)) continue;
     seen.add(eid);
 
-    const markets: Market[] = [];
+    const teams = teamsFromTitle(title);
+    const buckets: Record<MarketGroup, Outcome[]> = { Moneyline: [], "Total goals": [], "Exact score": [], Other: [] };
+    const standalone: Market[] = [];
+
     for (const m of ev.markets || []) {
       if (m.closed || m.active === false) continue;
       const names = parseField(m.outcomes);
@@ -183,28 +218,45 @@ function buildEvents(raw: any[], q: string, strict: boolean): MatchEvent[] {
       const tokens = parseField(m.clobTokenIds);
       if (!names || !prices || names.length !== prices.length) continue;
 
-      const outcomes: Outcome[] = [];
-      let sum = 0;
-      for (let i = 0; i < names.length; i++) {
-        const mm = priceMetrics(Number(prices[i]));
+      const gItem = (m.groupItemTitle || "").trim();
+      const isBinary = names.length === 2 && names.map((n) => n.toLowerCase()).sort().join(",") === "no,yes";
+
+      if (isBinary && gItem) {
+        // a single outcome of a grouped market — use its "Yes" price as the probability
+        const yesIdx = names.findIndex((n) => n.toLowerCase() === "yes");
+        const mm = priceMetrics(Number(prices[yesIdx]));
         if (!mm) continue;
-        sum += mm.price;
-        outcomes.push({
-          name: names[i],
+        buckets[categorizeOutcome(gItem, teams)].push({
+          name: gItem,
           price: mm.price,
           impliedPct: mm.impliedPct,
           decimalOdds: mm.decimalOdds,
-          tokenId: tokens && tokens[i] ? tokens[i] : undefined,
+          tokenId: tokens && tokens[yesIdx] ? tokens[yesIdx] : undefined,
         });
+      } else {
+        // a real multi-outcome market — keep as-is
+        const outs: Outcome[] = [];
+        let sum = 0;
+        for (let i = 0; i < names.length; i++) {
+          const mm = priceMetrics(Number(prices[i]));
+          if (!mm) continue;
+          sum += mm.price;
+          outs.push({ name: names[i], price: mm.price, impliedPct: mm.impliedPct, decimalOdds: mm.decimalOdds, tokenId: tokens && tokens[i] ? tokens[i] : undefined });
+        }
+        if (outs.length)
+          standalone.push({ question: m.question || title, group: marketGroup(m.question || ""), outcomes: outs, overhead: Math.round((sum - 1) * 1000) / 1000 });
       }
-      if (!outcomes.length) continue;
-      markets.push({
-        question: m.question || title,
-        group: marketGroup(m.question || ""),
-        outcomes,
-        overhead: Math.round((sum - 1) * 1000) / 1000,
-      });
     }
+
+    const markets: Market[] = [];
+    (["Moneyline", "Total goals", "Exact score", "Other"] as MarketGroup[]).forEach((cat) => {
+      let outs = buckets[cat];
+      if (!outs.length) return;
+      if (cat === "Moneyline" && teams) outs = sortMoneyline(outs, teams);
+      const sum = outs.reduce((s, o) => s + o.price, 0);
+      markets.push({ question: cat === "Moneyline" ? title : cat, group: cat, outcomes: outs, overhead: Math.round((sum - 1) * 1000) / 1000 });
+    });
+    markets.push(...standalone);
     if (!markets.length) continue;
     markets.sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group]);
 
