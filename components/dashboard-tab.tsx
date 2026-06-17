@@ -61,7 +61,7 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
           <CardContent>
             <AnimatedNumber value={state.bankroll} format={money} className="font-mono text-[40px] font-medium leading-none tracking-tight" />
             <div className="mt-2.5">
-              <span className={`inline-block rounded-full px-2 py-0.5 font-mono text-xs font-medium ${profit >= 0 ? "bg-[#0F2E1C] text-[#15803d]" : "bg-[#fee2e2] text-[#b91c1c]"}`}>
+              <span className={`inline-block rounded-full px-2 py-0.5 font-mono text-xs font-medium ${profit >= 0 ? "bg-[#dcfce7] text-[#15803d]" : "bg-[#fee2e2] text-[#b91c1c]"}`}>
                 {profit >= 0 ? "+" : ""}
                 {money(profit)}
               </span>

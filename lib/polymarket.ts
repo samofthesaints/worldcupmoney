@@ -84,19 +84,35 @@ async function gammaGet(path: string) {
 
 export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
   const q = query.trim().toLowerCase();
+  // Primary: ask Polymarket for the World Cup tag directly. If that yields
+  // nothing (tag slug unknown / not honored), fall back to a broad fetch and
+  // rely on the isWorldCup heuristic so we still scope correctly.
+  let out = await gather(q, true);
+  if (!out.length) out = await gather(q, false);
+
+  out.sort((a, b) => {
+    if (a.live !== b.live) return Number(b.live) - Number(a.live);
+    const ka = a.kickoff ? Date.parse(a.kickoff) : Infinity;
+    const kb = b.kickoff ? Date.parse(b.kickoff) : Infinity;
+    if (ka !== kb) return ka - kb;
+    return (b.volume24hr || 0) - (a.volume24hr || 0);
+  });
+  return out.slice(0, 60);
+}
+
+async function gather(q: string, useTag: boolean): Promise<MatchEvent[]> {
   const out: MatchEvent[] = [];
   const seen = new Set<string>();
 
   for (const offset of [0, 100, 200]) {
     let events: any[];
     try {
-      // tag_slug pre-filters to the World Cup when the API honors it; we filter
-      // again client-side (isWorldCup) so it's correct either way.
+      const tag = useTag ? "&tag_slug=world-cup" : "";
       events = await gammaGet(
-        `/events?closed=false&active=true&limit=100&offset=${offset}&order=volume24hr&ascending=false&tag_slug=world-cup`,
+        `/events?closed=false&active=true&limit=100&offset=${offset}&order=volume24hr&ascending=false${tag}`,
       );
     } catch (e) {
-      if (out.length) break;
+      if (out.length || useTag) break; // a broken tag query shouldn't throw the whole request
       throw e;
     }
     if (!events || !events.length) break;
@@ -160,15 +176,7 @@ export async function fetchMatchEvents(query: string): Promise<MatchEvent[]> {
     if (events.length < 100) break;
   }
 
-  // live first, then soonest kickoff, then volume
-  out.sort((a, b) => {
-    if (a.live !== b.live) return Number(b.live) - Number(a.live);
-    const ka = a.kickoff ? Date.parse(a.kickoff) : Infinity;
-    const kb = b.kickoff ? Date.parse(b.kickoff) : Infinity;
-    if (ka !== kb) return ka - kb;
-    return (b.volume24hr || 0) - (a.volume24hr || 0);
-  });
-  return out.slice(0, 60);
+  return out;
 }
 
 export async function fetchPriceHistory(tokenId: string): Promise<PricePoint[]> {
