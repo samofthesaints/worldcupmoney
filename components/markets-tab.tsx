@@ -67,8 +67,8 @@ export function MarketsTab() {
           </Button>
         </div>
         <p className="mt-3 text-[12px] leading-relaxed text-tertiary">
-          World Cup matches only — no tournament futures. Numbers are the market&apos;s <b>% chance</b> (the small ¢ is the
-          Polymarket price you&apos;ll see when betting). Tap a row to see totals &amp; exact-score markets and a price chart.
+          World Cup matches only — no tournament futures. Numbers are the market&apos;s <b>% chance</b> to win (with decimal
+          odds underneath). Tap a row to see totals &amp; exact-score markets and a price chart.
         </p>
       </Card>
 

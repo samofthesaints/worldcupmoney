@@ -35,9 +35,12 @@ web-searches recent team news), sizes your compounding chain, and keeps an hones
 
 ## Features
 
-- **🧭 Dashboard overview.** A composed home screen (per `design.md`'s Zajno layout): a light feature card with
-  your portfolio value + bankroll chart, a live/upcoming **match list**, today's P&L, and the **suggested bets**
-  panel — all on one screen.
+- **🧭 Dashboard overview.** A composed home screen (per `design.md`'s Zajno layout): a **live-game hero** panel
+  front and center, your portfolio value + bankroll chart, a live/upcoming **match list**, the **suggested bets**
+  panel, and your real Polymarket positions — all on one screen.
+- **👛 Your Polymarket positions.** Paste your wallet address to see your live holdings, value, and P&L pulled
+  read-only from Polymarket's public data API. Never moves funds; the address is stored only in your browser
+  (or set `NEXT_PUBLIC_POLYMARKET_ADDRESS`).
 - **📊 Live match odds, compact.** A scannable list of rows (not page-wide cards); tap a row to expand totals,
   exact scores (`2-2`), probability bars, and a 24h price chart. Numbers show the market's **% chance** (with the
   Polymarket ¢ price as the small label). **World Cup matches only** — no tournament futures, no other sports.
@@ -59,9 +62,9 @@ This is a Next.js app — it runs best hosted, so you get a link you just open o
 
 1. Push this repo to your GitHub (already done) and import it at **[vercel.com/new](https://vercel.com/new)**.
 2. No build settings needed — Vercel auto-detects Next.js. Click **Deploy**.
-3. *(Optional, for the AI analyst)* In **Project → Settings → Environment Variables**, add
-   **`ANTHROPIC_API_KEY`** with your [Anthropic API key](https://console.anthropic.com/). The app works fully
-   without it — you just won't get the "AI take" button. You can set `ANTHROPIC_MODEL` to override the default model.
+3. *(Optional)* In **Project → Settings → Environment Variables**, add:
+   - **`ANTHROPIC_API_KEY`** — enables the "AI take" button (from [console.anthropic.com](https://console.anthropic.com/)); `ANTHROPIC_MODEL` overrides the default model.
+   - **`NEXT_PUBLIC_POLYMARKET_ADDRESS`** — pre-fills your positions panel with your wallet (otherwise just paste it in the app).
 
 Live odds are fetched by the serverless functions in `app/api/*`, so they work anywhere with no CORS issues.
 

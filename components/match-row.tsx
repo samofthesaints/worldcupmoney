@@ -8,7 +8,7 @@ import { ProbBar } from "@/components/prob-bar";
 import { PriceChart } from "@/components/price-chart";
 import { useSession } from "@/lib/session-context";
 import type { Market, MatchEvent } from "@/lib/types";
-import { cents, kickoffLabel, outcomeColor } from "@/lib/utils";
+import { kickoffLabel, outcomeColor } from "@/lib/utils";
 
 export function MatchRow({ ev, index }: { ev: MatchEvent; index: number }) {
   const { openSlip } = useSession();
@@ -64,7 +64,7 @@ export function MatchRow({ ev, index }: { ev: MatchEvent; index: number }) {
                 o.name,
                 o.price,
               )}`}
-              title={`${o.name} · ${cents(o.price)} · ${o.decimalOdds}×`}
+              title={`${o.name} · ${o.impliedPct}% · ${o.decimalOdds}×`}
             >
               <div className="truncate text-[9px] uppercase tracking-wide text-tertiary">{shortName(o.name)}</div>
               <div className="font-mono text-[13px] font-medium leading-none" style={{ color: outcomeColor(i) }}>
@@ -119,9 +119,7 @@ export function MatchRow({ ev, index }: { ev: MatchEvent; index: number }) {
                         <div className="font-mono text-lg font-medium leading-none" style={{ color: outcomeColor(i) }}>
                           {o.impliedPct}%
                         </div>
-                        <div className="mt-0.5 font-mono text-[10px] text-tertiary">
-                          {cents(o.price)} · {o.decimalOdds}×
-                        </div>
+                        <div className="mt-0.5 font-mono text-[10px] text-tertiary">{o.decimalOdds}× odds</div>
                       </button>
                     ))}
                   </div>

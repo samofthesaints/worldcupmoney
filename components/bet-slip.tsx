@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "@/lib/session-context";
-import { cents, money } from "@/lib/utils";
+import { money } from "@/lib/utils";
 
 export function BetSlip() {
   const { slip, closeSlip, placeBet, state } = useSession();
@@ -65,8 +65,8 @@ export function BetSlip() {
         </div>
 
         <div className="mt-5 space-y-0">
-          <Row label="Price" value={`${cents(price)} (${price})`} />
-          <Row label="Implied chance" value={`${(price * 100).toFixed(1)}%`} />
+          <Row label="Win chance" value={`${(price * 100).toFixed(1)}%`} />
+          <Row label="Decimal odds" value={price ? (1 / price).toFixed(2) + "×" : "—"} />
           <Row label="Shares" value={payout ? (stakeNum / price).toFixed(2) : "—"} />
           <Row label="Potential payout" value={payout ? money(payout) : "—"} accent="text-yes" />
           <Row label="Profit if it hits" value={payout ? "+" + money(payout - stakeNum) : "—"} accent="text-yes" />

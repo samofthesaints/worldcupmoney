@@ -1,15 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
 import { Bar, BarChart, Cell, ResponsiveContainer } from "recharts";
-import { ArrowUpRight, Radio } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnimatedNumber } from "@/components/animated-number";
+import { LiveHero } from "@/components/live-hero";
 import { SuggestionsPanel } from "@/components/suggestions-panel";
+import { PositionsPanel } from "@/components/positions-panel";
 import { useSession } from "@/lib/session-context";
 import type { MatchEvent } from "@/lib/types";
 import { kickoffLabel, money, outcomeColor } from "@/lib/utils";
@@ -33,7 +32,9 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
 
   const settled = state.bets.filter((b) => b.status !== "open");
   const profit = state.bankroll - state.startingBankroll;
-  const profitPct = state.startingBankroll > 0 ? (profit / state.startingBankroll) * 100 : 0;
+
+  const liveEvent = (events || []).find((e) => e.live) || null;
+  const heroEvent = liveEvent || (events && events.length ? events[0] : null);
 
   const bars = React.useMemo(() => {
     let v = state.startingBankroll;
@@ -51,10 +52,14 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
   const liveCount = (events || []).filter((e) => e.live).length;
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-      {/* LEFT — light feature card + a stat */}
-      <div className="space-y-4 lg:col-span-3">
-        <Card className="bg-inverse text-[#0A0A0B]">
+    <div className="space-y-4">
+      {/* TOP: live hero + portfolio */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="lg:col-span-8">
+          {events === null ? <Skeleton className="h-[260px] w-full" /> : <LiveHero ev={heroEvent} isNext={!liveEvent} />}
+        </div>
+
+        <Card className="bg-inverse text-[#0A0A0B] lg:col-span-4">
           <CardHeader className="pb-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-[#52525b]">Portfolio value</span>
           </CardHeader>
@@ -66,7 +71,7 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
                 {money(profit)}
               </span>
             </div>
-            <div className="mt-4 h-[120px]">
+            <div className="mt-4 h-[96px]">
               {bars.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={bars} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
@@ -85,25 +90,16 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center justify-between py-5">
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-tertiary">Open positions</div>
-              <div className="mt-1 font-mono text-2xl font-medium">{state.bets.filter((b) => b.status === "open").length}</div>
-            </div>
-            <Button variant="secondary" size="icon" onClick={() => onNavigate("portfolio")}>
-              <ArrowUpRight className="h-4 w-4" />
+            <Button variant="secondary" size="sm" className="mt-3 w-full !bg-[#d4d4cc] !text-[#0A0A0B] hover:!bg-[#c8c8bf]" onClick={() => onNavigate("portfolio")}>
+              Manage bankroll
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* MIDDLE — match list + P&L */}
-      <div className="space-y-4 lg:col-span-4">
-        <Card>
+      {/* BOTTOM: matches + positions + suggestions */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>
               Matches {liveCount > 0 && <span className="ml-1 font-mono text-[11px] font-normal text-no">{liveCount} live</span>}
@@ -112,10 +108,10 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
               View all
             </Button>
           </CardHeader>
-          <CardContent className="space-y-0">
+          <CardContent className="flex-1">
             {events === null && [0, 1, 2, 3].map((i) => <Skeleton key={i} className="my-2 h-9 w-full" />)}
             {events && events.length === 0 && <div className="py-8 text-center text-[13px] text-tertiary">No World Cup matches open right now.</div>}
-            {events?.slice(0, 6).map((ev) => {
+            {events?.slice(0, 7).map((ev) => {
               const ml = ev.markets.find((m) => m.group === "Moneyline") ?? ev.markets[0];
               const fav = ml.outcomes.slice().sort((a, b) => b.price - a.price)[0];
               return (
@@ -148,37 +144,9 @@ export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tertiary">Profit today</span>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end justify-between">
-              <AnimatedNumber
-                value={profitPct}
-                format={(n) => (n >= 0 ? "+" : "") + n.toFixed(1) + "%"}
-                className={`font-mono text-[32px] font-medium leading-none ${profit >= 0 ? "text-yes" : "text-no"}`}
-              />
-              <div className="flex h-12 items-end gap-2">
-                <div className="w-7 rounded-t-sm bg-secondary" style={{ height: "55%" }} title="start" />
-                <div
-                  className="w-7 rounded-t-sm"
-                  style={{ height: "100%", backgroundColor: profit >= 0 ? "#22C55E" : "#EF4444" }}
-                  title="now"
-                />
-              </div>
-            </div>
-            <div className="mt-2 font-mono text-[11px] text-tertiary">
-              {state.startingBankroll > 0 ? `from ${money(state.startingBankroll)} start` : "set a starting portfolio in Portfolio"}
-            </div>
-          </CardContent>
-        </Card>
+        <PositionsPanel />
+        <SuggestionsPanel limit={5} />
       </div>
-
-      {/* RIGHT — suggestions */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="lg:col-span-5">
-        <SuggestionsPanel limit={6} />
-      </motion.div>
     </div>
   );
 }

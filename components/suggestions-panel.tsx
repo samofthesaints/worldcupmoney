@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/lib/session-context";
 import type { Signal, Suggestion } from "@/lib/types";
-import { cents } from "@/lib/utils";
 
 const SIGNAL_ICON: Record<Signal["kind"], React.ReactNode> = {
   momentum: <TrendingUp className="h-3 w-3" />,
@@ -112,7 +111,7 @@ function SuggestionItem({ s, rank }: { s: Suggestion; rank: number }) {
         </div>
         <div className="shrink-0 text-right">
           <div className="font-mono text-lg font-medium leading-none text-primary">{s.impliedPct}%</div>
-          <div className="font-mono text-[10px] text-tertiary">{cents(s.price)}</div>
+          <div className="font-mono text-[10px] text-tertiary">{s.decimalOdds}×</div>
         </div>
       </div>
 

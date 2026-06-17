@@ -3,6 +3,7 @@ import { priceMetrics } from "./utils";
 
 const GAMMA = "https://gamma-api.polymarket.com";
 const CLOB = "https://clob.polymarket.com";
+const DATA = "https://data-api.polymarket.com";
 
 // Only show actual matches ("Brazil vs. Haiti"), never tournament futures
 // ("Who will win the World Cup", group winners, top scorer, to-advance, etc.).
@@ -177,6 +178,34 @@ async function gather(q: string, useTag: boolean): Promise<MatchEvent[]> {
   }
 
   return out;
+}
+
+import type { Position } from "./types";
+
+export function isValidAddress(addr: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(addr.trim());
+}
+
+// Read-only: a wallet's current Polymarket positions from the public Data API.
+export async function fetchPositions(address: string): Promise<{ value: number; positions: Position[] }> {
+  const url = `${DATA}/positions?user=${address}&sizeThreshold=0.1&limit=200&sortBy=CURRENT&sortDirection=DESC`;
+  const r = await fetch(url, { headers: { "User-Agent": "worldcupmoney/2.0" }, next: { revalidate: 30 } });
+  if (!r.ok) throw new Error("positions HTTP " + r.status);
+  const data = await r.json();
+  const positions: Position[] = (Array.isArray(data) ? data : []).map((p: any) => ({
+    title: p.title || p.slug || "Position",
+    outcome: p.outcome ?? "",
+    size: Number(p.size) || 0,
+    avgPrice: Number(p.avgPrice) || 0,
+    curPrice: Number(p.curPrice) || 0,
+    value: Number(p.currentValue) || 0,
+    pnl: Number(p.cashPnl) || 0,
+    pnlPct: Number(p.percentPnl) || 0,
+    redeemable: !!p.redeemable,
+    slug: p.slug,
+  }));
+  const value = positions.reduce((s, p) => s + p.value, 0);
+  return { value: Math.round(value * 100) / 100, positions };
 }
 
 export async function fetchPriceHistory(tokenId: string): Promise<PricePoint[]> {

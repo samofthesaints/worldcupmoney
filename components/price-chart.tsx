@@ -52,10 +52,10 @@ export function PriceChart({ tokenId, height = 48 }: { tokenId?: string; height?
       </ResponsiveContainer>
       <div className="shrink-0 text-right">
         <div className="font-mono text-sm font-medium" style={{ color }}>
-          {Math.round(last * 100)}¢
+          {Math.round(last * 100)}%
         </div>
         <div className="font-mono text-[10px]" style={{ color }}>
-          {up ? "▲" : "▼"} {Math.abs(Math.round((last - first) * 100))}¢
+          {up ? "▲" : "▼"} {Math.abs(Math.round((last - first) * 100))} pts
         </div>
       </div>
     </div>

@@ -78,3 +78,23 @@ export type SuggestionsResponse = {
 };
 
 export type PricePoint = { t: number; p: number };
+
+export type Position = {
+  title: string;
+  outcome: string;
+  size: number;
+  avgPrice: number;
+  curPrice: number;
+  value: number;
+  pnl: number;
+  pnlPct: number;
+  redeemable: boolean;
+  slug?: string;
+};
+
+export type PositionsResponse = {
+  ok: boolean;
+  error?: string;
+  value: number;
+  positions: Position[];
+};

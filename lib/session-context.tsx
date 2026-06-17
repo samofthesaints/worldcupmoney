@@ -5,6 +5,8 @@ import type { Bet, SessionState } from "./types";
 import { priceMetrics, round2 } from "./utils";
 
 const STORE = "wcm_state_v2";
+const ADDR_STORE = "wcm_address";
+const ENV_ADDR = process.env.NEXT_PUBLIC_POLYMARKET_ADDRESS || "";
 
 const blank = (): SessionState => ({
   startingBankroll: 0,
@@ -27,6 +29,8 @@ type SessionCtx = {
   slip: SlipSelection | null;
   openSlip: (s: SlipSelection) => void;
   closeSlip: () => void;
+  address: string;
+  setAddress: (a: string) => void;
 };
 
 const Ctx = React.createContext<SessionCtx | null>(null);
@@ -35,11 +39,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<SessionState>(blank);
   const [hydrated, setHydrated] = React.useState(false);
   const [slip, setSlip] = React.useState<SlipSelection | null>(null);
+  const [address, setAddressState] = React.useState<string>(ENV_ADDR);
 
   React.useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE);
       if (raw) setState({ ...blank(), ...JSON.parse(raw) });
+      const addr = localStorage.getItem(ADDR_STORE);
+      if (addr) setAddressState(addr);
     } catch {
       /* ignore */
     }
@@ -49,6 +56,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (hydrated) localStorage.setItem(STORE, JSON.stringify(state));
   }, [state, hydrated]);
+
+  const setAddress = (a: string) => {
+    setAddressState(a);
+    try {
+      localStorage.setItem(ADDR_STORE, a);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const startSession = (start: number, stopLoss: number) =>
     setState({ ...blank(), startingBankroll: start, bankroll: start, stopLoss });
@@ -130,6 +146,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         slip,
         openSlip: setSlip,
         closeSlip: () => setSlip(null),
+        address,
+        setAddress,
       }}
     >
       {children}
