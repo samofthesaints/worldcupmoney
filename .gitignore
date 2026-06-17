@@ -1,0 +1,5 @@
+# Your private session data — bankroll, bets. Never commit this.
+data/session.json
+data/*.tmp
+__pycache__/
+*.pyc

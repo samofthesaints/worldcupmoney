@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Cup Money</title>
+<style>
+  :root{
+    --bg:#0b1220; --card:#141d2e; --line:#243149; --ink:#e8eef7; --mut:#93a3bd;
+    --grn:#34d399; --red:#f87171; --acc:#60a5fa; --warn:#fbbf24;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;
+    align-items:baseline;gap:12px;flex-wrap:wrap}
+  header h1{font-size:20px;margin:0}
+  header .tag{color:var(--mut);font-size:13px}
+  main{max-width:1080px;margin:0 auto;padding:22px;display:grid;gap:18px;
+    grid-template-columns:1fr 1fr}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card h2{margin:0 0 12px;font-size:15px;letter-spacing:.02em;color:var(--mut);
+    text-transform:uppercase}
+  .full{grid-column:1/-1}
+  label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
+  input,select{width:100%;padding:9px 10px;background:#0d1626;border:1px solid var(--line);
+    border-radius:8px;color:var(--ink);font-size:14px}
+  button{cursor:pointer;border:1px solid var(--line);background:#1c2942;color:var(--ink);
+    padding:9px 14px;border-radius:8px;font-size:14px}
+  button:hover{background:#243149}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#06101f;font-weight:600}
+  button.win{background:var(--grn);border-color:var(--grn);color:#04130c}
+  button.lose{background:var(--red);border-color:var(--red);color:#1a0606}
+  button.ghost{background:transparent}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .row>div{flex:1;min-width:120px}
+  .stat{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .stat:last-child{border:0}
+  .big{font-size:30px;font-weight:700}
+  .grn{color:var(--grn)} .red{color:var(--red)} .mut{color:var(--mut)} .warn{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600}
+  .pill{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line)}
+  .pill.open{color:var(--acc)} .pill.won{color:var(--grn)} .pill.lost{color:var(--red)}
+  .note{font-size:12.5px;color:var(--mut);background:#0d1626;border:1px solid var(--line);
+    border-radius:8px;padding:10px;margin-top:10px}
+  .mkt{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px}
+  .mkt .q{font-weight:600;margin-bottom:6px}
+  .out{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}
+  .out button{padding:3px 8px;font-size:12px}
+  .hint{font-size:12px;color:var(--mut)}
+  @media(max-width:820px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚽ World Cup Money</h1>
+  <span class="tag">compound smart, bet small — you place the bets, this keeps the math &amp; the record honest</span>
+</header>
+<main>
+
+  <!-- BANKROLL -->
+  <section class="card">
+    <h2>Today's bankroll</h2>
+    <div class="big" id="bankroll">$0.00</div>
+    <div class="stat"><span class="mut">Started with</span><span id="start">$0.00</span></div>
+    <div class="stat"><span class="mut">Profit today</span><span id="profit">$0.00</span></div>
+    <div class="stat"><span class="mut">Stop-loss floor</span><span id="stop">—</span></div>
+    <div id="stopWarn"></div>
+    <div class="row" style="margin-top:12px">
+      <div><label>Set starting bankroll ($)</label><input id="startIn" type="number" step="1" placeholder="e.g. 20"></div>
+      <div><label>Stop-loss floor ($)</label><input id="stopIn" type="number" step="1" placeholder="e.g. 8"></div>
+      <div style="flex:0"><button class="primary" onclick="newSession()">Start day</button></div>
+    </div>
+    <div class="note">Compounding rolls winnings forward, so one loss can wipe a streak.
+      A stop-loss tells you when to walk away. Only bet money you're fine losing.</div>
+  </section>
+
+  <!-- COMPOUNDING PLANNER -->
+  <section class="card">
+    <h2>Compounding planner</h2>
+    <label>Match prices for each leg (Polymarket price, 0–1, comma separated)</label>
+    <input id="legs" placeholder="e.g. 0.62, 0.55, 0.70, 0.48" oninput="plan()">
+    <div class="row">
+      <div><label>Start from ($)</label><input id="planStart" type="number" step="1" oninput="plan()"></div>
+      <div><label>Stake fraction per leg</label>
+        <select id="frac" onchange="plan()">
+          <option value="1">100% (full roll-over)</option>
+          <option value="0.5">50%</option>
+          <option value="0.33">33%</option>
+          <option value="0.25">25%</option>
+        </select></div>
+    </div>
+    <div id="planOut" style="margin-top:12px"></div>
+  </section>
+
+  <!-- LIVE ODDS -->
+  <section class="card full">
+    <h2>Live Polymarket odds</h2>
+    <div class="row">
+      <div style="flex:3"><label>Search markets (team name, or leave blank for World Cup / match markets)</label>
+        <input id="q" placeholder="e.g. Brazil  •  Mexico  •  World Cup" onkeydown="if(event.key==='Enter')loadMarkets()"></div>
+      <div style="flex:0"><button class="primary" onclick="loadMarkets()">Fetch odds</button></div>
+    </div>
+    <div class="hint" style="margin-top:6px">Price = market's implied probability. Click a side to pre-fill a bet below. You still place the real bet on Polymarket.</div>
+    <div id="markets" style="margin-top:12px"></div>
+  </section>
+
+  <!-- LOG A BET -->
+  <section class="card">
+    <h2>Log a bet</h2>
+    <label>Match / market</label><input id="bMatch" placeholder="Brazil vs Haiti">
+    <label>Your pick</label><input id="bPick" placeholder="Brazil to win">
+    <div class="row">
+      <div><label>Stake ($)</label><input id="bStake" type="number" step="0.5"></div>
+      <div><label>Price (0–1)</label><input id="bPrice" type="number" step="0.01" oninput="betPreview()"></div>
+    </div>
+    <div id="betPrev" class="hint" style="margin-top:6px"></div>
+    <button class="primary" style="margin-top:10px" onclick="addBet()">Add bet</button>
+  </section>
+
+  <!-- BET LOG -->
+  <section class="card">
+    <h2>Bet log</h2>
+    <table><thead><tr><th>Match</th><th>Pick</th><th>Stake</th><th>Odds</th><th>Return</th><th>Status</th><th></th></tr></thead>
+      <tbody id="bets"></tbody></table>
+    <div id="emptyBets" class="hint" style="margin-top:8px">No bets yet.</div>
+  </section>
+
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const money = n => (n<0?'-$':'$') + Math.abs(n).toFixed(2);
+
+async function api(path, method='GET', body=null){
+  const opt = {method, headers:{'Content-Type':'application/json'}};
+  if(body) opt.body = JSON.stringify(body);
+  const r = await fetch(path, opt);
+  return r.json();
+}
+
+function render(state){
+  $('bankroll').textContent = money(state.bankroll);
+  $('start').textContent = money(state.starting_bankroll);
+  const p = state.bankroll - state.starting_bankroll;
+  const pe = $('profit'); pe.textContent = (p>=0?'+':'') + money(p);
+  pe.className = p>0?'grn':(p<0?'red':'');
+  $('stop').textContent = state.stop_loss ? money(state.stop_loss) : '—';
+  const sw = $('stopWarn');
+  if(state.stop_loss && state.bankroll <= state.stop_loss && state.starting_bankroll>0){
+    sw.innerHTML = '<div class="note" style="border-color:var(--red)"><b class="red">Stop-loss hit.</b> Time to walk away for today.</div>';
+  } else sw.innerHTML = '';
+
+  const tb = $('bets'); tb.innerHTML='';
+  (state.bets||[]).slice().reverse().forEach(b=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(b.match)}</td><td>${esc(b.pick)}</td><td>${money(b.stake)}</td>
+      <td>${b.decimal_odds}×</td><td>${money(b.to_return)}</td>
+      <td><span class="pill ${b.status}">${b.status}</span></td>
+      <td style="white-space:nowrap">${
+        b.status==='open'
+        ? `<button class="win" onclick="settle(${b.id},'won')">Won</button>
+           <button class="lose" onclick="settle(${b.id},'lost')">Lost</button>`
+        : `<button class="ghost" onclick="del(${b.id})">✕</button>`}</td>`;
+    tb.appendChild(tr);
+  });
+  $('emptyBets').style.display = (state.bets||[]).length ? 'none':'block';
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+async function refresh(){ render(await api('/api/state')); }
+async function newSession(){
+  render(await api('/api/session','POST',{
+    starting_bankroll:+$('startIn').value||0, stop_loss:+$('stopIn').value||0}));
+}
+async function addBet(){
+  const s = await api('/api/bets','POST',{
+    match:$('bMatch').value, pick:$('bPick').value,
+    stake:+$('bStake').value, price:+$('bPrice').value});
+  if(s.error){ alert(s.error); return; }
+  $('bStake').value=''; $('bPrice').value=''; $('betPrev').textContent='';
+  render(s);
+}
+async function settle(id,result){ render(await api('/api/settle','POST',{id,result})); }
+async function del(id){ render(await api('/api/delete','POST',{id})); }
+
+function betPreview(){
+  const p = +$('bPrice').value;
+  if(p>0 && p<1){
+    $('betPrev').textContent = `Implied ${(p*100).toFixed(1)}% • decimal odds ${(1/p).toFixed(2)}× • $1 returns ${(1/p).toFixed(2)} on a win`;
+  } else $('betPrev').textContent = '';
+}
+
+async function loadMarkets(){
+  const box = $('markets'); box.innerHTML = '<div class="hint">Loading…</div>';
+  const r = await api('/api/markets?q=' + encodeURIComponent($('q').value.trim()));
+  if(!r.ok && r.error){
+    box.innerHTML = `<div class="note" style="border-color:var(--warn)"><b class="warn">Couldn't reach Polymarket.</b> ${esc(r.error)}<br>You can still log bets manually below.</div>`;
+    return;
+  }
+  if(!r.markets.length){ box.innerHTML = '<div class="hint">No matching markets found. Try a team name, or log the bet manually.</div>'; return; }
+  box.innerHTML = '';
+  r.markets.forEach(m=>{
+    const d = document.createElement('div'); d.className='mkt';
+    let html = `<div class="q">${esc(m.question)}</div>`;
+    m.outcomes.forEach(o=>{
+      html += `<div class="out"><span>${esc(o.name)} — <span class="mut">${o.implied_pct}% • ${o.decimal_odds}×</span></span>
+        <button onclick="pick('${esc(m.question)}','${esc(o.name)}',${o.price})">Use ${o.price}</button></div>`;
+    });
+    if(m.end_date) html += `<div class="hint">ends ${esc(m.end_date)}</div>`;
+    d.innerHTML = html; box.appendChild(d);
+  });
+}
+function pick(match,name,price){
+  $('bMatch').value = match; $('bPick').value = name; $('bPrice').value = price;
+  betPreview(); $('bMatch').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+async function plan(){
+  const prices = $('legs').value;
+  const start = +$('planStart').value || 0;
+  const fraction = $('frac').value;
+  if(!prices.trim() || !start){ $('planOut').innerHTML = '<div class="hint">Enter a starting amount and leg prices.</div>'; return; }
+  const r = await api(`/api/compound?start=${start}&fraction=${fraction}&prices=${encodeURIComponent(prices)}`);
+  let rows = r.legs.map((l,i)=> l.error
+    ? `<div class="stat"><span class="red">Leg ${i+1}: ${l.error}</span></div>`
+    : `<div class="stat"><span>Leg ${i+1} @ ${l.price} (${l.implied_pct}%)</span><span>stake ${money(l.stake)} → ${money(l.bankroll_if_win)}</span></div>`
+  ).join('');
+  $('planOut').innerHTML = rows +
+    `<div class="stat"><span><b>If all legs win</b></span><span class="grn"><b>${money(r.final_if_all_win)}</b> (+${money(r.profit_if_all_win)})</span></div>
+     <div class="note"><b class="warn">Reality check:</b> all ${r.legs.length} legs landing has roughly a
+       <b>${r.combined_hit_prob_pct}%</b> combined chance at these prices. The more legs you chain, the lower that gets.</div>`;
+}
+
+refresh();
+</script>
+</body>
+</html>
