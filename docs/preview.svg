@@ -1,0 +1,103 @@
+<svg width="1280" height="500" viewBox="0 0 1280 500" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <style>
+      .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+      .lbl  { fill:#6B6B73; font-size:11px; letter-spacing:1.5px; }
+      .sec  { fill:#A1A1AA; }
+      .pri  { fill:#F5F5F4; }
+    </style>
+  </defs>
+
+  <!-- canvas -->
+  <rect width="1280" height="500" fill="#0A0A0B"/>
+
+  <!-- top bar -->
+  <line x1="0" y1="64" x2="1280" y2="64" stroke="#26262A"/>
+  <text x="32" y="40" class="pri" font-size="17" font-weight="600">⚽ World Cup Money</text>
+  <text x="232" y="40" fill="#F5F5F4" font-size="13" font-weight="500">Markets</text>
+  <rect x="226" y="50" width="56" height="2" fill="#E8501F"/>
+  <text x="312" y="40" fill="#A1A1AA" font-size="13">Portfolio</text>
+  <text x="392" y="40" fill="#A1A1AA" font-size="13">Planner</text>
+  <rect x="1014" y="20" width="150" height="30" rx="15" fill="#1C1C1F" stroke="#26262A"/>
+  <circle cx="1034" cy="35" r="4" fill="#22C55E"/>
+  <text x="1046" y="39" class="sec" font-size="12">Auto-refresh on</text>
+  <rect x="1176" y="20" width="72" height="30" rx="15" fill="#1C1C1F" stroke="#26262A"/>
+  <text x="1212" y="39" class="mono pri" font-size="13" font-weight="500" text-anchor="middle">$45.71</text>
+
+  <!-- portfolio value (feature / light card) -->
+  <rect x="32" y="96" width="360" height="150" rx="16" fill="#E8EAE3"/>
+  <text x="56" y="130" font-size="11" letter-spacing="1.5px" fill="#52525b">PORTFOLIO VALUE</text>
+  <text x="56" y="186" class="mono" font-size="46" font-weight="500" fill="#0A0A0B">$45.71</text>
+  <rect x="56" y="204" width="92" height="24" rx="12" fill="#0F2E1C"/>
+  <text x="102" y="220" class="mono" font-size="12" font-weight="500" fill="#22C55E" text-anchor="middle">+$25.71</text>
+
+  <!-- win rate -->
+  <rect x="32" y="262" width="176" height="138" rx="16" fill="#141416" stroke="#26262A"/>
+  <text x="56" y="296" class="lbl">REALIZED WIN RATE</text>
+  <text x="56" y="344" class="mono pri" font-size="30" font-weight="500">67%</text>
+  <text x="56" y="372" class="mono" font-size="12" fill="#6B6B73">4 of 6 bets won</text>
+
+  <!-- stop loss -->
+  <rect x="224" y="262" width="168" height="138" rx="16" fill="#141416" stroke="#26262A"/>
+  <text x="248" y="296" class="lbl">STOP-LOSS</text>
+  <text x="248" y="344" class="mono pri" font-size="30" font-weight="500">$15.00</text>
+  <text x="248" y="372" class="mono" font-size="12" fill="#EAB308">active</text>
+
+  <!-- market card -->
+  <rect x="424" y="96" width="824" height="304" rx="16" fill="#141416" stroke="#26262A"/>
+  <text x="452" y="134" class="pri" font-size="18" font-weight="600">Croatia vs England</text>
+  <rect x="660" y="118" width="98" height="22" rx="11" fill="#2A2410"/>
+  <text x="709" y="133" font-size="10" letter-spacing="1px" fill="#EAB308" text-anchor="middle">CLOSING SOON</text>
+  <text x="452" y="156" class="mono" font-size="11" fill="#6B6B73">24h vol $1.24M · kicks off 18:00</text>
+
+  <!-- moneyline group -->
+  <rect x="452" y="176" width="86" height="20" rx="10" fill="none" stroke="#26262A"/>
+  <text x="495" y="190" font-size="10" letter-spacing="1px" fill="#6B6B73" text-anchor="middle">MONEYLINE</text>
+  <text x="548" y="190" class="sec" font-size="12">Match result</text>
+
+  <!-- probability bar -->
+  <clipPath id="pb"><rect x="452" y="206" width="768" height="8" rx="4"/></clipPath>
+  <g clip-path="url(#pb)">
+    <rect x="452" y="206" width="315" height="8" fill="#22C55E"/>
+    <rect x="767" y="206" width="215" height="8" fill="#3A3A40"/>
+    <rect x="982" y="206" width="238" height="8" fill="#EF4444"/>
+  </g>
+
+  <!-- outcome buttons -->
+  <rect x="452" y="228" width="248" height="74" rx="12" fill="#1C1C1F" stroke="#26262A"/>
+  <text x="468" y="252" class="sec" font-size="13">Croatia</text>
+  <text x="468" y="282" class="mono" font-size="22" font-weight="500" fill="#22C55E">41¢</text>
+  <text x="468" y="298" class="mono" font-size="11" fill="#6B6B73">41% · 2.44×</text>
+
+  <rect x="712" y="228" width="248" height="74" rx="12" fill="#1C1C1F" stroke="#26262A"/>
+  <text x="728" y="252" class="sec" font-size="13">Draw</text>
+  <text x="728" y="282" class="mono" font-size="22" font-weight="500" fill="#A1A1AA">28¢</text>
+  <text x="728" y="298" class="mono" font-size="11" fill="#6B6B73">28% · 3.57×</text>
+
+  <rect x="972" y="228" width="248" height="74" rx="12" fill="#1C1C1F" stroke="#26262A"/>
+  <text x="988" y="252" class="sec" font-size="13">England</text>
+  <text x="988" y="282" class="mono" font-size="22" font-weight="500" fill="#EF4444">31¢</text>
+  <text x="988" y="298" class="mono" font-size="11" fill="#6B6B73">31% · 3.23×</text>
+
+  <!-- exact score group -->
+  <rect x="452" y="322" width="92" height="20" rx="10" fill="none" stroke="#26262A"/>
+  <text x="498" y="336" font-size="10" letter-spacing="1px" fill="#6B6B73" text-anchor="middle">EXACT SCORE</text>
+  <text x="554" y="336" class="sec" font-size="12">Correct scoreline</text>
+
+  <g class="mono" font-size="13">
+    <rect x="452" y="352" width="86" height="32" rx="8" fill="#1C1C1F" stroke="#26262A"/>
+    <text x="495" y="372" fill="#F5F5F4" text-anchor="middle">1-1 · 14¢</text>
+    <rect x="550" y="352" width="86" height="32" rx="8" fill="#1C1C1F" stroke="#26262A"/>
+    <text x="593" y="372" fill="#F5F5F4" text-anchor="middle">2-1 · 11¢</text>
+    <rect x="648" y="352" width="86" height="32" rx="8" fill="#1C1C1F" stroke="#26262A"/>
+    <text x="691" y="372" fill="#F5F5F4" text-anchor="middle">0-0 · 10¢</text>
+    <rect x="746" y="352" width="86" height="32" rx="8" fill="#3A1E14" stroke="#E8501F"/>
+    <text x="789" y="372" fill="#FF6A3D" text-anchor="middle">2-2 · 9¢</text>
+    <rect x="844" y="352" width="86" height="32" rx="8" fill="#1C1C1F" stroke="#26262A"/>
+    <text x="887" y="372" fill="#F5F5F4" text-anchor="middle">1-0 · 9¢</text>
+  </g>
+
+  <!-- footer caption -->
+  <text x="32" y="446" class="sec" font-size="13">Live Polymarket odds · a compounding planner · an honest bankroll tracker</text>
+  <text x="32" y="470" font-size="13" fill="#6B6B73">Runs locally · zero dependencies · places no bets — you stay in control</text>
+</svg>
